@@ -3,12 +3,11 @@ import numpy as np
 import cv2
 import time
 import threading
-from datetime import datetime
 import os
 from pynput import keyboard
 
 screen_resolution = [2560, 1440]
-screenshot_region = (screen_resolution[0] - 800, screen_resolution[1] - 600, 800, 600)  # (left, top, width, height)
+screenshot_region = (screen_resolution[0] - 800, screen_resolution[1] - 260, 800, 260)  # (left, top, width, height)
 
 commonly_used_firearm_list = ['m762', 'aug', 'm4', 'ace32', 'akm', 'groza', 'k2', 'm249', 'p90', 'scar']
 low_frequency_used_firearms_list = ['g36c', 'qbz', 'tmx', 'ump', 'uzi', 'vkt', 'famae']
