@@ -47,7 +47,7 @@ def take_screenshot(region):
 def match_image(screenshot, template, threshold=0.8):
     result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
     loc = np.where(result >= threshold)
-    return loc
+    return len(loc[0]) > 0
 
 
 # 加载图片模板
@@ -71,9 +71,8 @@ def monitor_screen(templates, interval):
         match_found = False
 
         for name, template in templates.items():
-            match_locations = match_image(screenshot, template)
 
-            if len(match_locations[0]) > 0:
+            if match_image(screenshot, template):
                 # 识别结果不同时更新
                 if last_indexWeapon != name:
                     last_indexWeapon = name
