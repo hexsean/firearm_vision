@@ -19,7 +19,7 @@ low_frequency_used_firearms_list = ['g36c', 'qbz', 'tmx', 'ump', 'uzi', 'vkt', '
 whether_overlay = True
 
 weapon_threshold = {
-    'm762': 0.81,
+    'm762': 0.76,
     'aug': 0.81,
     'm4': 0.81,
     'ace32': 0.81,
@@ -101,8 +101,14 @@ def monitor_screen(templates, interval, overlay):
         screenshot = take_screenshot(screenshot_region)
         match_found = False
 
+        text_list = []
+
         for name, template in templates.items():
             max_val = match_image(convert_to_gray(screenshot), template)
+
+            # 常用队列统计相似度
+            if overlay is not None and name in commonly_used_firearm_list:
+                text_list.append(f"{name}相似度: {max_val}\n")
 
             if max_val >= weapon_threshold.get(name):
 
@@ -125,6 +131,9 @@ def monitor_screen(templates, interval, overlay):
 
                 match_found = True
                 break
+
+        if len(text_list) > 0:
+            overlay.update_text1(" ".join(text_list))
 
         # 未匹配到图片且当前状态不为N
         if not match_found and last_indexWeapon != 'N':
@@ -206,7 +215,6 @@ def on_posture_main(key):
 if __name__ == "__main__":
     print("Starting the application...")
     # 设置按键监听器
-    print("请保持窗口开启 ==> 按键监控中...\n")
     keyboard.Listener(on_press=on_posture_main).start()
     print("请保持窗口开启 ==> 截图监控中...\n")
     image_identification_main()
