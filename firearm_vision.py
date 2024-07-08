@@ -84,13 +84,29 @@ def get_pixel_color(x, y):
 
 
 # 加载图片模板
-def load_templates(firearm_list):
+def load_templates():
     templates = {}
     for filename in firearm_list:
         template_path = os.path.join('firearms', filename + ".png")
         template = cv2.imread(template_path, cv2.IMREAD_GRAYSCALE)
         templates[filename] = adaptive_threshold(template)
     return templates
+
+
+# 判断是否佩戴全自动武器
+def whether_wear_fully_automatic_rifle():
+    y = 1346
+    # 判断是否打能量
+    color1 = get_pixel_color(1916, 1330)
+    r, g, b = color1
+    # 加速图标亮起, 认为此时打了能量, 子弹图标上移17个像素点
+    if r > 200 and g > 200 and b > 200:
+        y = y - 17
+
+    # 根据第三颗子弹是否亮起判断是否佩戴全自动步枪
+    color = get_pixel_color(1670, y)
+    r, g, b = color
+    return r > 200 and g > 200 and b > 200
 
 
 # 监控屏幕是否出现指定模板
@@ -105,22 +121,13 @@ def monitor_screen(templates, interval, overlay):
         max_val_list = {}
         text_list = []
 
-        y = 1346
-        # 判断是否打能量
-        color1 = get_pixel_color(1916, 1330)
-        r, g, b = color1
-        if r > 200 and g > 200 and b > 200:
-            y = y - 17
-        # 判断是否佩戴全自动步枪
-        color = get_pixel_color(1670, y)
-        r, g, b = color
-        if r > 200 and g > 200 and b > 200:
+        if whether_wear_fully_automatic_rifle():
             for name, template in templates.items():
                 max_val = match_image(screenshot, template)
 
                 # 常用队列统计相似度
-                # if overlay is not None:
-                #     text_list.append(f"{name}相似度: {max_val}\n")
+                if overlay is not None:
+                    text_list.append(f"{name}相似度: {max_val}\n")
 
                 if max_val >= weapon_threshold.get(name):
                     max_val_list[name] = max_val
@@ -160,7 +167,6 @@ def image_identification_main():
     # 重置枪械和姿势
     write_weapon_state(0)
     write_posture_state(0)
-    commonly_used_firearm_templates = load_templates(firearm_list)
     overlay = None
 
     if whether_overlay:
@@ -168,7 +174,7 @@ def image_identification_main():
         overlay = TextOverlay(tk.Tk(), '1540', '1288', "", "持续监控中...")
 
     # 启动监控线程
-    monitor_thread = threading.Thread(target=monitor_screen, args=(commonly_used_firearm_templates, 0.2, overlay))
+    monitor_thread = threading.Thread(target=monitor_screen, args=(load_templates(), 0.2, overlay))
     monitor_thread.start()
 
     if whether_overlay:
