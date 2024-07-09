@@ -3,7 +3,7 @@ import queue
 
 
 class TextOverlay:
-    def __init__(self, root, geometry_x, geometry_y, text1="", text2=""):
+    def __init__(self, root, geometry_x, geometry_y, text1="", text2="", text3="", text4=""):
         self.root = root
         self.root.overrideredirect(True)
         self.root.geometry(f"+{geometry_x}+{geometry_y}")
@@ -18,10 +18,17 @@ class TextOverlay:
         self.label2 = tk.Label(self.root, text=text2, font=("Helvetica", 12), bg="yellow", fg="black")
         if text2:
             self.label2.pack()
-
+        self.label3 = tk.Label(self.root, text=text3, font=("Helvetica", 12), bg="yellow", fg="black")
+        if text3:
+            self.label3.pack()
+        self.label4 = tk.Label(self.root, text=text4, font=("Helvetica", 12), bg="yellow", fg="black")
+        if text4:
+            self.label4.pack()
         self.root.bind("<Control_L>", self.close_window)
         self.queue1 = queue.Queue()
         self.queue2 = queue.Queue()
+        self.queue3 = queue.Queue()
+        self.queue4 = queue.Queue()
         self.root.after(100, self.process_queue)
 
     def close_window(self, event):
@@ -33,6 +40,12 @@ class TextOverlay:
     def update_text2(self, new_text):
         self.queue2.put(new_text)
 
+    def update_text3(self, new_text):
+        self.queue3.put(new_text)
+
+    def update_text4(self, new_text):
+        self.queue4.put(new_text)
+
     def process_queue(self):
         try:
             new_text1 = self.queue1.get_nowait()
@@ -43,6 +56,18 @@ class TextOverlay:
         try:
             new_text2 = self.queue2.get_nowait()
             self._update_label(self.label2, new_text2)
+        except queue.Empty:
+            pass
+
+        try:
+            new_text3 = self.queue3.get_nowait()
+            self._update_label(self.label3, new_text3)
+        except queue.Empty:
+            pass
+
+        try:
+            new_text4 = self.queue4.get_nowait()
+            self._update_label(self.label4, new_text4)
         except queue.Empty:
             pass
 

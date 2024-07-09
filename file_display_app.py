@@ -31,7 +31,7 @@ def update_content(interval, overlay):
 
 
 def main():
-    overlay = TextOverlay(tk.Tk(), '0', '0', "", "000")
+    overlay = TextOverlay(tk.Tk(), '0', '0')
     monitor_thread = threading.Thread(target=update_content, args=(0.2, overlay))
     monitor_thread.start()
     overlay.root.mainloop()

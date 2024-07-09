@@ -1,10 +1,28 @@
 {
   "resolution": [3440, 1440],
-  "screenshot_region": {
+  "weapon_region": {
     "left": 2740,
     "top": 1200,
     "width": 300,
     "height": 240
+  },
+  "grip_region": {
+    "left": 2348,
+    "top": 314,
+    "width": 66,
+    "height": 66
+  },
+  "muzzle_region": {
+    "left": 2212,
+    "top": 314,
+    "width": 66,
+    "height": 66
+  },
+  "stocks_region": {
+    "left": 2778,
+    "top": 314,
+    "width": 66,
+    "height": 66
   },
   "weapon_threshold": {
     "m762": 0.30,
@@ -44,7 +62,7 @@
     "vkt": 15,
     "famae": 17
   },
-  "file_paths": ["C:/Users/Public/Downloads/pubg.lua", "C:/Users/Public/Downloads/pubgd.lua"],
+  "file_path": "C:/Users/Public/Downloads/pubg_state.lua",
   "whether_overlay": true,
   "whether_screenshot": false
 }
