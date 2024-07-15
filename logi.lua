@@ -1,4 +1,180 @@
-EnablePrimaryMouseButtonEvents(true)
+-- 本脚本需配合自动识别程序使用, 且仅支持全自动武器和半自动武器单点压枪, 支持2, 3, 4倍镜和全部配件
+-------------------------------------- [[全局动态注入参数 - 使用dofile更新]]
+-- 枪械名字, 默认识别为空, 为空时值为"None".
+GunName = "None"
+
+-- 后坐力系数, 默认为1即满配(枪口补偿, 拇指握把, 战术枪托, 基础瞄具). 该系数为配件相关系数, 不代表最终系数, 由识别的配件相乘得出.
+RecoilFactor = 1
+
+-- 当前人物姿势, 1-站立, 2-蹲下, 3-卧倒. 不同姿势对应不同的后坐力系数
+Posture = 1
+
+-------------------------------------- [[全局动态参数 - 脚本运行时更新]]
+-- 是否运行脚本, 由当前按键状态决定, 用于中断脚本
+IsRun = false
+
+-- 鼠标按下时记录脚本运行时间戳
+ClickStartTime = 0
+
+-- 当前时间戳
+ClickCurrentTime = 0
+
+-- 第几颗子弹
+BulletIndex = 0
+-------------------------------------- [[全局静态参数]]
+-- 是否开启debug
+IsDebug = false
+
+-- 瞄准模式: 0-切换开镜, 1-长按开镜
+AimingModel = 1
+
+-- CPU负载等级, 值越大循环的频率越低, 压枪效果也越差. 提高值可以提高压枪的fps, 但也会增加CPU的计算量
+CpuLoad = 2
+
+-- 识别程序输出的脚本文件路径
+ConfigPath = "C:/Users/Public/Downloads/pubg_config.lua"
+
+-------------------------------------- [[枪械参数]]
+Guns = {
+    M762 = {
+        interval = 86,
+        standingRecoilFactor = 1,
+        crouchingRecoilFactor = 0.83,
+        proneRecoilFactor = 0.55,
+        recoilPattern = { 5, 5, 5, 9, 14, 20, 27, 35, 44, 54, 65, 77, 89, 101, 113, 125, 137, 148, 159, 169, 178, 186, 193, 199, 204, 208, 211, 213, 214, 214 }
+    },
+    AUG = {
+        interval = 83,
+        standingRecoilFactor = 1,
+        crouchingRecoilFactor = 0.83,
+        proneRecoilFactor = 0.55,
+        recoilPattern = { 5, 5, 5, 9, 14, 20, 27, 35, 44, 54, 65, 77, 89, 101, 113, 125, 137, 148, 159, 169, 178, 186, 193, 199, 204, 208, 211, 213, 214, 214 }
+    }
+}
+
+-------------------------------------- [[函数定义]]
+-- 加载配置
+function LoadConfig()
+    dofile(ConfigPath)
+    IsRun = true
+end
+-- 重置配置
+function ResetConfig()
+    IsRun = false
+    SetRandomseed()
+end
+-- 更新随机数种子(reverse确保变化范围)
+function SetRandomseed()
+    math.randomseed(GetDate("%H%M%S"):reverse())
+end
+-- 随机睡眠
+function RandomSleep()
+    if IsDebug then
+        Sleep(CpuLoad)
+    else
+        Sleep(math.random(CpuLoad + CpuLoad+5))
+    end
+end
+
+-- 应用压枪
+function ApplyRecoil(gunData, recoilFactor, posture)
+
+	-- Accurate aiming press gun
+	pubg.currentTime = GetRunningTime()
+
+	pubg.bulletIndex = math.ceil(((pubg.currentTime - pubg.startTime == 0 and {1} or {pubg.currentTime - pubg.startTime})[1]) / options.interval) + 1
+
+    pubg.bulletIndex = math.ceil((pubg.currentTime - pubg.startTime == 0 and 1 or pubg.currentTime - pubg.startTime) / options.interval) + 1
+
+    -- 当前子弹序号不能超过最大值
+	if pubg.bulletIndex > options.amount then return false end
+
+	-- Developer Debugging Mode
+	local d = (IsKeyLockOn("scrolllock") and { (pubg.bulletIndex - 1) * pubg.xLengthForDebug } or { 0 })[1]
+
+	local x = math.ceil((pubg.currentTime - pubg.startTime) / (options.interval * (pubg.bulletIndex - 1)) * d) - pubg.xCounter
+	local y = math.ceil((pubg.currentTime - pubg.startTime) / (options.interval * (pubg.bulletIndex - 1)) * options.ballistic[pubg.bulletIndex]) - pubg.counter
+
+
+	-- 4-fold pressure gun mode
+	local realY = pubg.getRealY(options, y)
+	MoveMouseRelative(x, realY)
+
+	-- Whether to issue automatically or not
+	if options.autoContinuousFiring == 1 then
+		PressAndReleaseMouseButton(1)
+	end
+
+	-- Real-time operation parameters
+	pubg.autoLog(options, y)
+	pubg.outputLogRender()
+
+	pubg.xCounter = pubg.xCounter + x
+	pubg.counter = pubg.counter + y
+
+	pubg.autoSleep(IsKeyLockOn("scrolllock"))
+end
+
+-------------------------------------- [[开启鼠标监听]]
+EnablePrimaryMouseButtonEvents(true) -- 开启鼠标左键监听
+function OnEvent (event, arg, family)
+    -- 按下鼠标左键, 加载配置项目 (AimingModel == 0时, 仅需按下左键, AimingModel == 1时, 需保持右键按下状态)
+    if event == "MOUSE_BUTTON_PRESSED" and arg == 1 and family == "mouse" and ((AimingModel == 1 and IsMouseButtonPressed(3)) or AimingModel == 0) then
+        LoadConfig()
+        if GunName ~= "None" then
+            -- 记录脚本开启时间
+            StartTime = GetRunningTime()
+            SetMKeyState(1, "kb")
+        end
+    -- 松开鼠标左键, 恢复动态参数默认值
+    elseif event == "MOUSE_BUTTON_RELEASED" and arg == 1 and family == "mouse" then
+        ResetConfig()
+    end
+    -- M_PRESSED用于递归触发压枪
+    if event == "M_PRESSED" and arg == 1 and IsRun and GunName ~= "None" then
+        ApplyRecoil(Guns[GunName], RecoilFactor, Posture)
+        SetMKeyState(1, "kb")
+    end
+end
+
+
+
+	if event == "MOUSE_BUTTON_PRESSED" and arg == 1 and family == "mouse" then
+		if not pubg.runStatus() then return false end
+		if userInfo.aimingSettings ~= "default" and not IsMouseButtonPressed(3) then
+			pubg.PressOrRelaseAimKey(true)
+		end
+		if pubg.isAimingState("ADS") or pubg.isAimingState("Aim") then
+			pubg.startTime = GetRunningTime()
+			pubg.G1 = true
+			SetMKeyState(1, "kb")
+		end
+	end
+
+	if event == "MOUSE_BUTTON_RELEASED" and arg == 1 and family == "mouse" then
+		pubg.PressOrRelaseAimKey(false)
+		pubg.G1 = false
+		pubg.counter = 0 -- Initialization counter
+		pubg.xCounter = 0 -- Initialization xCounter
+		pubg.SetRandomseed() -- Reset random number seeds
+	end
+
+	if event == "M_PRESSED" and arg == 1 and pubg.G1 then
+		pubg.auto(pubg.gunOptions[pubg.bulletType][pubg.gunIndex])
+		SetMKeyState(1, "kb")
+	end
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- 定义武器配件的修正系数
 local attachment_multipliers = {
@@ -37,75 +213,6 @@ local attachment_multipliers = {
     }
 }
 
--- 预定义武器的压枪模式（每个数组元素表示一发子弹的压枪力度）
-local recoil_patterns = {
-    Berry = {
-    {1, 50},
-    {2, 50},
-    {3, 50},
-    {4, 50},
-    {5, 50},
-    {6, 50},
-    {7, 50},
-    {8, 50},
-    {9, 50},
-    {10, 50},
-    {11, 50},
-    {12, 50},
-    {13, 50},
-    {14, 50},
-    {15, 50},
-    {16, 50},
-    {17, 50},
-    {18, 50},
-    {19, 50},
-    {20, 50},
-    {21, 50},
-    {22, 50},
-    {23, 50},
-    {24, 50},
-    {25, 50},
-    {26, 50},
-    {27, 50},
-    {28, 50},
-    {29, 50},
-    {30, 80},
-    {31, 80},
-    {32, 80},
-    {33, 80},
-    {34, 80},
-    {35, 80},
-    {36, 80},
-    {37, 80},
-    {38, 80},
-    {39, 80},
-    {40, 80},
-    },  -- 4发子弹的压枪模式
-    AUG = {{1, 10}, {2, 10}, {3, 10}, {4, 10}},   -- 4发子弹的压枪模式
-    MK47 = {
-    {1, 5},
-    {2, 5},
-    {3, 5},
-    {4, 5},
-    {5, 5},
-    {6, 5},
-    {7, 5},
-    {8, 5},
-    {9, 5},
-    {10, 5},
-    },  -- 4发子弹的压枪模式
-    M16 = {{1, 10}, {2, 10}, {3, 10}, {4, 10}},   -- 4发子弹的压枪模式
-    SKS = {{1, 60}, {2, 60}, {3, 60}, {4, 60}},  -- 4发子弹的压枪模式
-}
-
--- 定义武器射击间隔
-local weapon_intervals = {
-    Berry =75,
-    AUG = 100,
-    MK47 = 400,
-    M16 = 100,
-    SKS = 100,
-}
 
 -- 累计小数部分
 local decimal_cache = 0
