@@ -39,8 +39,8 @@ muzzle_list = ['xiaoyan', 'buchang']
 stocks_list = ['zhongxing', 'zhanshu']
 
 posture_lock = threading.Lock()
-last_weapon_name = 'N'
-posture_state = 'stand'
+last_weapon_name = 'None'
+posture_state = 1
 state_dict = {}
 
 
@@ -153,7 +153,7 @@ def firearm_monitor_screen(templates, interval, overlay_model):
                 # 识别结果不同时更新
                 if last_weapon_name != name:
                     last_weapon_name = name
-                    update_state("weapon_name", name)
+                    update_state("GunName", name)
                     write_all_states(file_path)
                     print(f"耗时: {(time.time() - start_time) * 1000:.2f} ms, 更新时相似度: {max_val_list.get(name)} 当前使用武器: {name}")
 
@@ -166,9 +166,9 @@ def firearm_monitor_screen(templates, interval, overlay_model):
                 overlay_model.update_text1(" ".join(text_list))
 
         # 未匹配到图片且当前状态不为N
-        if not match_found and last_weapon_name != 'N':
-            last_weapon_name = 'N'
-            update_state("weapon_name", "None")
+        if not match_found and last_weapon_name != 'None':
+            last_weapon_name = 'None'
+            update_state("GunName", "None")
             write_all_states(file_path)
             print(f"耗时: {(time.time() - start_time) * 1000:.2f} ms, 未佩枪")
 
@@ -210,32 +210,27 @@ def accessories_monitor_screen(grips_template_list, muzzles_template_list, stock
                 if max_val >= 0.3:
                     stocks_max_val_list[name] = max_val
 
+            grips_rifle_name = None
+            muzzles_rifle_name = None
+            stocks_rifle_name = None
+            scopes_rifle_name = None
+
             if len(grip_max_val_list) > 0:
-                name = max(grip_max_val_list, key=grip_max_val_list.get)
-                update_state("grips_rifle", name)
+                grips_rifle_name = max(grip_max_val_list, key=grip_max_val_list.get)
                 if overlay_model is not None:
                     text_list.append(f"相似度: {grip_max_val_list.get(name):.2f}, 当前使用握把: {name}\n")
-            else:
-                update_state("grips_rifle", "None")
 
             if len(muzzles_max_val_list) > 0:
-                name = max(muzzles_max_val_list, key=muzzles_max_val_list.get)
-                update_state("muzzles_rifle", name)
+                muzzles_rifle_name = max(muzzles_max_val_list, key=muzzles_max_val_list.get)
                 if overlay_model is not None:
                     text_list.append(f"相似度: {muzzles_max_val_list.get(name):.2f}, 当前使用枪口: {name}\n")
-            else:
-                update_state("muzzles_rifle", "None")
 
             if len(stocks_max_val_list) > 0:
-                name = max(stocks_max_val_list, key=stocks_max_val_list.get)
-                update_state("stocks_rifle", name)
+                stocks_rifle_name = max(stocks_max_val_list, key=stocks_max_val_list.get)
                 if overlay_model is not None:
                     text_list.append(f"相似度: {stocks_max_val_list.get(name):.2f}, 当前使用枪托: {name}\n")
-            else:
-                update_state("stocks_rifle", "None")
 
-            # 瞄准镜默认
-            update_state("scopes_rifle", "None")
+            update_state("RecoilFactor", 1)
             write_all_states(file_path)
 
             if overlay_model is not None and len(text_list) > 0:
@@ -283,7 +278,10 @@ def update_state(key, value):
 def write_all_states(file_path_name):
     with open(file_path_name, 'w', encoding='utf-8') as file:
         for key, value in state_dict.items():
-            file.write(f"{key} = {value}\n")
+            if isinstance(value, str):
+                file.write(f"{key} = '{value}'\n")
+            else:
+                file.write(f"{key} = {value}\n")
 
 
 def on_press(key):
@@ -292,13 +290,13 @@ def on_press(key):
         char = key.char.lower()  # 将字符转为小写
         if char == 'c' or char == '\x03':
             with posture_lock:  # 加锁
-                posture_state = 'down' if posture_state != 'down' else 'stand'
-                update_state("posture_state", posture_state)
+                posture_state = 2 if posture_state != 2 else 1
+                update_state("Posture", posture_state)
 
         elif char == 'z' or char == '\x1a':
             with posture_lock:  # 加锁
-                posture_state = 'lie' if posture_state != 'lie' else 'stand'
-                update_state("posture_state", posture_state)
+                posture_state = 3 if posture_state != 3 else 1
+                update_state("Posture", posture_state)
         elif whether_screenshot and key.char == 'k':
             print("正在截取屏幕...")
             dir_name = "screenshots"
@@ -317,13 +315,13 @@ def on_press(key):
 
         elif key == keyboard.Key.space:
             with posture_lock:  # 加锁
-                update_state("posture_state", "stand")
+                update_state("Posture", 1)
 
         write_all_states(file_path)
     except AttributeError:
         if key == keyboard.Key.space:
             with posture_lock:  # 加锁
-                update_state("posture_state", "stand")
+                update_state("Posture", 1)
                 write_all_states(file_path)
 
 
@@ -338,12 +336,9 @@ if __name__ == "__main__":
         overlay = TextOverlay(tk.Tk(), '1540', '1288', "", "持续监控中...")
 
     # 重置枪械, 姿势, 和配件
-    update_state("weapon_name", "None")
-    update_state("posture_state", "stand")
-    update_state("grips_rifle", "None")
-    update_state("muzzles_rifle", "None")
-    update_state("stocks_rifle", "None")
-    update_state("scopes_rifle", "None")
+    update_state("GunName", "None")
+    update_state("Posture", 1)
+    update_state("RecoilFactor", 1)
     write_all_states(file_path)
 
     # 启动枪械监控线程
