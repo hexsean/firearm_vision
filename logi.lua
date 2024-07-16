@@ -1,5 +1,6 @@
--- 本脚本需配合自动识别程序使用, 且仅支持全自动武器和半自动武器单点压枪, 支持2, 3, 4倍镜和全部配件
--------------------------------------- [[全局动态注入参数 - 使用dofile更新]]
+--[[本脚本需配合自动识别程序使用, 且仅支持全自动武器和半自动武器单点压枪, 支持2, 3, 4倍镜和全部配件]]
+
+-- [[全局动态注入参数 - 使用dofile更新]]
 -- 枪械名字, 默认识别为空, 为空时值为"None".
 GunName = "None"
 
@@ -9,7 +10,7 @@ RecoilFactor = 1
 -- 当前人物姿势, 1-站立, 2-蹲下, 3-卧倒. 不同姿势对应不同的后坐力系数
 Posture = 1
 
--------------------------------------- [[全局动态参数 - 脚本运行时更新]]
+--[[全局动态参数 - 脚本运行时更新]]
 -- 是否运行脚本, 由当前按键状态决定, 用于中断脚本
 IsRun = false
 
@@ -21,7 +22,11 @@ ClickCurrentTime = 0
 
 -- 第几颗子弹
 BulletIndex = 0
--------------------------------------- [[全局静态参数]]
+
+XCounter = 0
+YCounter = 0
+
+--[[全局静态参数]]
 -- 是否开启debug
 IsDebug = false
 
@@ -34,14 +39,14 @@ CpuLoad = 2
 -- 识别程序输出的脚本文件路径
 ConfigPath = "C:/Users/Public/Downloads/pubg_config.lua"
 
--------------------------------------- [[枪械参数]]
+--[[枪械参数]]
 Guns = {
     M762 = {
         interval = 86,
         standingRecoilFactor = 1,
         crouchingRecoilFactor = 0.83,
         proneRecoilFactor = 0.55,
-        recoilPattern = { 5, 5, 5, 9, 14, 20, 27, 35, 44, 54, 65, 77, 89, 101, 113, 125, 137, 148, 159, 169, 178, 186, 193, 199, 204, 208, 211, 213, 214, 214 }
+        recoilPattern = { 40, 25, 18, 18, 17, 18, 19, 20, 20, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 28, 29, 27, 27, 28, 28, 28, 28, 30, 30, 30, 30, 30, 30, 30, 29, 29, 29, 29, 29}
     },
     AUG = {
         interval = 83,
@@ -52,21 +57,27 @@ Guns = {
     }
 }
 
--------------------------------------- [[函数定义]]
+--[[函数定义]]
 -- 加载配置
 function LoadConfig()
     dofile(ConfigPath)
     IsRun = true
 end
+
 -- 重置配置
 function ResetConfig()
     IsRun = false
+    XCounter = 0
+    YCounter = 0
+    ClickCurrentTime = 0
     SetRandomseed()
 end
+
 -- 更新随机数种子(reverse确保变化范围)
 function SetRandomseed()
     math.randomseed(GetDate("%H%M%S"):reverse())
 end
+
 -- 随机睡眠
 function RandomSleep()
     if IsDebug then
@@ -76,93 +87,55 @@ function RandomSleep()
     end
 end
 
--- 应用压枪
-function ApplyRecoil(gunData, recoilFactor, posture)
-
-	-- Accurate aiming press gun
-	pubg.currentTime = GetRunningTime()
-
-	pubg.bulletIndex = math.ceil(((pubg.currentTime - pubg.startTime == 0 and {1} or {pubg.currentTime - pubg.startTime})[1]) / options.interval) + 1
-
-    pubg.bulletIndex = math.ceil((pubg.currentTime - pubg.startTime == 0 and 1 or pubg.currentTime - pubg.startTime) / options.interval) + 1
-
-    -- 当前子弹序号不能超过最大值
-	if pubg.bulletIndex > options.amount then return false end
-
-	-- Developer Debugging Mode
-	local d = (IsKeyLockOn("scrolllock") and { (pubg.bulletIndex - 1) * pubg.xLengthForDebug } or { 0 })[1]
-
-	local x = math.ceil((pubg.currentTime - pubg.startTime) / (options.interval * (pubg.bulletIndex - 1)) * d) - pubg.xCounter
-	local y = math.ceil((pubg.currentTime - pubg.startTime) / (options.interval * (pubg.bulletIndex - 1)) * options.ballistic[pubg.bulletIndex]) - pubg.counter
-
-
-	-- 4-fold pressure gun mode
-	local realY = pubg.getRealY(options, y)
-	MoveMouseRelative(x, realY)
-
-	-- Whether to issue automatically or not
-	if options.autoContinuousFiring == 1 then
-		PressAndReleaseMouseButton(1)
-	end
-
-	-- Real-time operation parameters
-	pubg.autoLog(options, y)
-	pubg.outputLogRender()
-
-	pubg.xCounter = pubg.xCounter + x
-	pubg.counter = pubg.counter + y
-
-	pubg.autoSleep(IsKeyLockOn("scrolllock"))
+function GetRealY (y, recoilFactor, posture)
+    return y
 end
 
--------------------------------------- [[开启鼠标监听]]
+-- 应用压枪
+function ApplyRecoil(gunData, recoilFactor, posture, bulletIndex)
+    OutputLogMessage("999999999999 ====> " .. "bulletIndex: " .. bulletIndex .. " YCounter: " .. YCounter .. "\n")
+    if bulletIndex > YCounter then
+        local x = 0
+        if IsDebug then
+            x = 50
+        end
+        local y = gunData.recoilPattern[bulletIndex]
+        local realY = GetRealY(y, recoilFactor, posture)
+        MoveMouseRelative(x, realY)
+        OutputLogMessage("移动鼠标 ====> " .. "相对移动x: " .. x .. " 相对移动y: " .. realY .. "\n")
+        YCounter = YCounter + 1
+    end
+
+    RandomSleep()
+end
+
+--[[开启鼠标监听]]
 EnablePrimaryMouseButtonEvents(true) -- 开启鼠标左键监听
 function OnEvent (event, arg, family)
+    OutputLogMessage("start => " .. "event: " .. event .. " arg: " .. event .. "\n")
     -- 按下鼠标左键, 加载配置项目 (AimingModel == 0时, 仅需按下左键, AimingModel == 1时, 需保持右键按下状态)
     if event == "MOUSE_BUTTON_PRESSED" and arg == 1 and family == "mouse" and ((AimingModel == 1 and IsMouseButtonPressed(3)) or AimingModel == 0) then
         LoadConfig()
         if GunName ~= "None" then
             -- 记录脚本开启时间
-            StartTime = GetRunningTime()
-            SetMKeyState(1, "kb")
+            ClickStartTime = GetRunningTime()
+            local gunData = Guns[GunName]
+            while IsMouseButtonPressed(1) do
+                -- 记录当前时间
+                ClickCurrentTime = GetRunningTime()
+                -- 计算当前是第几颗子弹
+                BulletIndex = math.ceil((ClickCurrentTime - ClickStartTime == 0 and 1 or (ClickCurrentTime - ClickStartTime) / gunData.interval))
+                OutputLogMessage("ApplyRecoil ====> " .. "BulletIndex: " .. BulletIndex .. " ClickCurrentTime: " .. ClickCurrentTime .. " ClickStartTime: " .. ClickStartTime .. " #gunData.recoilPattern: " .. #gunData.recoilPattern .. "\n")
+                -- 当前子弹序号不能超过最大值
+                if BulletIndex > #gunData.recoilPattern then break end
+                ApplyRecoil(gunData, RecoilFactor, Posture, BulletIndex)
+            end
         end
     -- 松开鼠标左键, 恢复动态参数默认值
     elseif event == "MOUSE_BUTTON_RELEASED" and arg == 1 and family == "mouse" then
         ResetConfig()
     end
-    -- M_PRESSED用于递归触发压枪
-    if event == "M_PRESSED" and arg == 1 and IsRun and GunName ~= "None" then
-        ApplyRecoil(Guns[GunName], RecoilFactor, Posture)
-        SetMKeyState(1, "kb")
-    end
 end
-
-
-
-	if event == "MOUSE_BUTTON_PRESSED" and arg == 1 and family == "mouse" then
-		if not pubg.runStatus() then return false end
-		if userInfo.aimingSettings ~= "default" and not IsMouseButtonPressed(3) then
-			pubg.PressOrRelaseAimKey(true)
-		end
-		if pubg.isAimingState("ADS") or pubg.isAimingState("Aim") then
-			pubg.startTime = GetRunningTime()
-			pubg.G1 = true
-			SetMKeyState(1, "kb")
-		end
-	end
-
-	if event == "MOUSE_BUTTON_RELEASED" and arg == 1 and family == "mouse" then
-		pubg.PressOrRelaseAimKey(false)
-		pubg.G1 = false
-		pubg.counter = 0 -- Initialization counter
-		pubg.xCounter = 0 -- Initialization xCounter
-		pubg.SetRandomseed() -- Reset random number seeds
-	end
-
-	if event == "M_PRESSED" and arg == 1 and pubg.G1 then
-		pubg.auto(pubg.gunOptions[pubg.bulletType][pubg.gunIndex])
-		SetMKeyState(1, "kb")
-	end
 
 
 
