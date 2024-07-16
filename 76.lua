@@ -619,13 +619,14 @@ function pubg.auto (options)
 
 	pubg.bulletIndex = math.ceil(((pubg.currentTime - pubg.startTime == 0 and {1} or {pubg.currentTime - pubg.startTime})[1]) / options.interval) + 1
 
-    pubg.bulletIndex = math.ceil((pubg.currentTime - pubg.startTime == 0 and 1 or pubg.currentTime - pubg.startTime) / options.interval) + 1
-
     -- 当前子弹序号不能超过最大值
 	if pubg.bulletIndex > options.amount then return false end
 
 	-- Developer Debugging Mode
+	--如果按下scrolllock d等于当前子弹数-1乘以水平移动ads数值, 否则返回0 开启时为 0, 30, 60, 90
 	local d = (IsKeyLockOn("scrolllock") and { (pubg.bulletIndex - 1) * pubg.xLengthForDebug } or { 0 })[1]
+
+    --当前脚本运行时间除以当前压枪时间(0, interval, 2interval, 3interval, 4interval) * d
 
 	local x = math.ceil((pubg.currentTime - pubg.startTime) / (options.interval * (pubg.bulletIndex - 1)) * d) - pubg.xCounter
 	local y = math.ceil((pubg.currentTime - pubg.startTime) / (options.interval * (pubg.bulletIndex - 1)) * options.ballistic[pubg.bulletIndex]) - pubg.counter
@@ -1155,6 +1156,7 @@ function pubg.OnEvent_NoRecoil (event, arg, family)
     -- 触发左键且属于鼠标事件
 	if event == "MOUSE_BUTTON_PRESSED" and arg == 1 and family == "mouse" then
 		if not pubg.runStatus() then return false end
+		-- 自动腰射实现逻辑
 		if userInfo.aimingSettings ~= "default" and not IsMouseButtonPressed(3) then
 			pubg.PressOrRelaseAimKey(true)
 		end
