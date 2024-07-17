@@ -1,34 +1,14 @@
 --[[本脚本需配合自动识别程序使用, 且仅支持全自动武器和半自动武器单点压枪, 支持2, 3, 4倍镜和全部配件]]
 
--- 补偿 垂直握把1
--- 补偿 半截式握把1.05
--- 补偿 拇指握把1.15
--- 补偿 轻型握把1.15
--- 补偿 无握把1.32
-
--- 消焰 垂直握把1.08
--- 消焰 半截式握把1.18
--- 消焰 拇指握把1.23
--- 消焰 轻型握把1.23
--- 消焰 无握把1.40
-
--- 无枪口 垂直握把1.28
--- 无枪口 半截式握把1.32
--- 无枪口 拇指握把1.44
--- 无枪口 轻型握把1.44
--- 无枪口 无握把1.6
-
 -- [[全局动态注入参数 - 使用dofile更新]]
 -- 枪械名字, 默认识别为空, 为空时值为"None".
 GunName = "None"
 
--- 后坐力系数, 默认为1即满配(枪口补偿, 拇指握把, 战术枪托, 基础瞄具). 该系数为配件相关系数, 不代表最终系数, 由识别的配件相乘得出.
+-- 后坐力系数, 默认为游戏内灵敏度1 * 配件系数 * 倍镜系数 * 姿势系数
 RecoilFactor = 1
 
--- 当前人物姿势, 1-站立, 2-蹲下, 3-卧倒. 不同姿势对应不同的后坐力系数
-Posture = 1
-
 --[[全局动态参数 - 脚本运行时更新]]
+
 -- 是否运行脚本, 由当前按键状态决定, 用于中断脚本
 IsRun = false
 
@@ -45,6 +25,7 @@ XCounter = 0
 YCounter = 0
 
 --[[全局静态参数]]
+
 -- 是否开启debug
 IsDebug = false
 
@@ -60,38 +41,10 @@ ConfigPath = "C:/Users/Public/Downloads/pubg_config.lua"
 --[[枪械参数]]
 Guns = {
     m762 = {
-        interval = 83,
-        standingRecoilFactor = 1,
-        crouchingRecoilFactor = 0.83,
-        proneRecoilFactor = 0.59,
+        interval = 86,
         ballistics = {},
         recoilPattern = {
-            {1, 40},
-            {1, 28},
-            {1, 19},
-            {2, 30},
-            {1, 31},
-            {1, 32},
-            {2, 33},
-            {1, 37},
-            {9, 38},
-            {1, 39},
-            {1, 40},
-            {1, 40},
-            {2, 40},
-            {4, 43},
-            {7, 45},
-            {7, 51}
-        }
-    },
-    aug = {
-        interval = 83,
-        standingRecoilFactor = 1,
-        crouchingRecoilFactor = 0.83,
-        proneRecoilFactor = 0.55,
-        recoilPattern = {
-            {20, 20},
-            {20, 30}
+            {1, 0},{2, 57},{3, 36},{4, 41},{5, 44},{6, 48},{7, 49},{8, 52},{9, 54},{10, 56},{11, 58},{12, 62},{14, 64},{16, 66},{18, 67},{20, 68},{24, 69},{28, 71},{30, 71},{32, 72},{36, 73},{42, 74},
         }
     }
 }
@@ -126,17 +79,35 @@ function RandomSleep()
     end
 end
 
--- 展开折叠后坐力列表
-function ExpandRecoilPattern(recoilPattern)
-    local expanded = {}
-    for _, pair in ipairs(recoilPattern) do
-        local count = pair[1]
+-- 填充后坐力列表
+function FillGaps(recoilPattern)
+    local newPattern = {}
+    local lastIndex = 0
+
+    for i, pair in ipairs(recoilPattern) do
+        local index = pair[1]
         local value = pair[2]
-        for i = 1, count do
-            table.insert(expanded, value)
+
+        if index > lastIndex + 1 then
+            for j = lastIndex + 1, index - 1 do
+                table.insert(newPattern, {j, recoilPattern[i-1][2]})
+            end
         end
+
+        table.insert(newPattern, {index, value})
+        lastIndex = index
     end
-    return expanded
+
+    return newPattern
+end
+
+-- 去除子弹坐标
+function ExtractValues(recoilPattern)
+    local values = {}
+    for i, pair in ipairs(recoilPattern) do
+        table.insert(values, pair[2])
+    end
+    return values
 end
 
 -- 随机数
@@ -175,7 +146,13 @@ function ApplyRecoil(gunData, bulletIndex)
 end
 
 --[[开启鼠标监听]]
-EnablePrimaryMouseButtonEvents(true) -- 开启鼠标左键监听
+EnablePrimaryMouseButtonEvents(true)
+
+--[[预处理]]
+for _, gun in pairs(Guns) do
+    gun.recoilPattern = ExtractValues(FillGaps(gun.recoilPattern))
+end
+
 function OnEvent (event, arg, family)
     if IsDebug then
     	OutputLogMessage("start => " .. "event: " .. event .. " arg: " .. arg .. "\n")
@@ -190,15 +167,7 @@ function OnEvent (event, arg, family)
             if GunName ~= "None" then
                 local gunData = Guns[GunName]
                 -- 计算弹道
-                local coefficient = 0
-                if Posture == 1 then
-                	coefficient  = RecoilFactor * gunData.standingRecoilFactor
-                elseif Posture == 2 then
-                    coefficient  = RecoilFactor * gunData.crouchingRecoilFactor
-                elseif Posture == 3 then
-                    coefficient  = RecoilFactor * gunData.proneRecoilFactor
-                end
-                gunData.ballistics = AccumulateValues(ExpandRecoilPattern(gunData.recoilPattern), coefficient)
+                gunData.ballistics = AccumulateValues(gunData.recoilPattern, RecoilFactor)
                 local count = #gunData.ballistics
                 while IsMouseButtonPressed(1) do
                     -- 记录当前时间
