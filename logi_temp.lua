@@ -12,32 +12,32 @@ AimingModel = 1
 CycleDelay = 2
 ConfigPath = "C:/Users/Public/Downloads/pubg_config.lua"
 Guns = {
-    M762 = {
-        interval = 86,
+    m762 = {
+        interval = 87,
         standingRecoilFactor = 1,
         crouchingRecoilFactor = 0.83,
         proneRecoilFactor = 0.55,
         ballistics = {},
         recoilPattern = {
             {1, 40},
-            {1, 25},
-            {2, 18},
-            {1, 17},
-            {1, 18},
-            {1, 19},
-            {2, 20},
-            {1, 23},
-            {9, 24},
-            {1, 25},
             {1, 28},
-            {1, 29},
-            {2, 27},
-            {4, 28},
-            {7, 30},
-            {5, 29}
+            {1, 19},
+            {2, 30},
+            {1, 31},
+            {1, 32},
+            {2, 33},
+            {1, 37},
+            {9, 38},
+            {1, 39},
+            {1, 40},
+            {1, 40},
+            {2, 40},
+            {4, 43},
+            {7, 45},
+            {7, 51}
         }
     },
-    AUG = {
+    aug = {
         interval = 83,
         standingRecoilFactor = 1,
         crouchingRecoilFactor = 0.83,
