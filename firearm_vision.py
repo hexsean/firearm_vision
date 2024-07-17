@@ -333,7 +333,8 @@ if __name__ == "__main__":
     overlay = None
     if whether_overlay:
         # 创建监控窗口
-        overlay = TextOverlay(tk.Tk(), '1540', '1288', "", "持续监控中...")
+        # overlay = TextOverlay(tk.Tk(), '1540', '1288', "", "持续监控中...")
+        overlay = TextOverlay(tk.Tk(), '300', '300', "", "持续监控中...")
 
     # 重置枪械, 姿势, 和配件
     update_state("GunName", "None")
