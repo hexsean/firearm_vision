@@ -6,7 +6,7 @@ ClickCurrentTime = 0
 BulletIndex = 0
 XCounter = 0
 YCounter = 0
-IsDebug = false
+IsDebug = true
 AimingModel = 1
 CycleDelay = 2
 ConfigPath = "C:/Users/Public/Downloads/pubg_config.lua"
@@ -15,7 +15,7 @@ Guns = {
         interval = 86,
         ballistics = {},
         recoilPattern = {
-            {1, 57},{2, 57},{3, 36},{4, 41},{5, 44},{6, 48},{7, 49},{8, 52},{9, 54},{10, 56},{11, 58},{12, 62},{14, 64},{16, 66},{18, 67},{20, 68},{24, 69},{28, 71},{30, 71},{32, 72},{36, 73},{42, 74},
+            {1, 37},{2, 25},{3, 32},{4, 34},{5, 37},{6, 39},{7, 44},{8, 46},{9, 46},{10, 45},{11, 47},{12, 45},{13, 49},{19, 55},{42, 20}
         }
     }
 }
