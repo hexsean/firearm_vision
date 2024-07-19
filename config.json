@@ -1,30 +1,41 @@
 {
-  "resolution": [3440, 1440],
-  "weapon_region": {
+  "lua_config_path": "C:/Users/Public/Downloads/pubg_config.lua",
+  "screen_resolution": [3440, 1440],
+  "is_open_overlay": true,
+  "is_open_screenshot_of_keystrokes": false,
+  "vertical_sensitivity_magnification": 1.35,
+  "weapon_screenshot_area": {
     "left": 2740,
     "top": 1200,
     "width": 300,
     "height": 240
   },
-  "grip_region": {
-    "left": 2348,
-    "top": 314,
-    "width": 66,
-    "height": 66
-  },
-  "muzzle_region": {
+  "muzzle_screenshot_area": {
     "left": 2212,
     "top": 314,
     "width": 66,
     "height": 66
   },
-  "stocks_region": {
+  "grip_screenshot_area": {
+    "left": 2348,
+    "top": 314,
+    "width": 66,
+    "height": 66
+  },
+  "butt_screenshot_area": {
     "left": 2778,
     "top": 314,
     "width": 66,
     "height": 66
   },
-  "weapon_threshold": {
+  "sight_screenshot_area": {
+    "left": 0,
+    "top": 0,
+    "width": 66,
+    "height": 66
+  },
+
+  "weapon_recognition_confidence_threshold": {
     "m762": 0.30,
     "aug": 0.30,
     "m4": 0.30,
@@ -42,27 +53,5 @@
     "uzi": 0.30,
     "vkt": 0.30,
     "famae": 0.30
-  },
-  "index_weapon_mapping": {
-    "m762": 2,
-    "aug": 11,
-    "m4": 3,
-    "ace32": 4,
-    "akm": 1,
-    "groza": 10,
-    "k2": 12,
-    "m249": 13,
-    "p90": 16,
-    "scar": 5,
-    "g36c": 6,
-    "qbz": 7,
-    "tmx": 14,
-    "ump": 8,
-    "uzi": 9,
-    "vkt": 15,
-    "famae": 17
-  },
-  "file_path": "C:/Users/Public/Downloads/pubg_config.lua",
-  "whether_overlay": true,
-  "whether_screenshot": false
+  }
 }

@@ -6,6 +6,7 @@
 --补偿0.79
 --消焰0.86
 
+--猜测: 默认配件
 
 -- 补偿 垂直握把1
 -- 补偿 半截式握把1.05
@@ -32,7 +33,7 @@
 GunName = "None"
 
 -- 后坐力系数, 默认为游戏内灵敏度1 * 配件系数 * 倍镜系数 * 姿势系数
-RecoilFactor = 1
+RecoilCoefficient = 1
 
 --[[全局动态参数 - 脚本运行时更新]]
 
@@ -194,7 +195,7 @@ function OnEvent (event, arg, family)
             if GunName ~= "None" then
                 local gunData = Guns[GunName]
                 -- 计算弹道
-                gunData.ballistics = AccumulateValues(gunData.recoilPattern, RecoilFactor)
+                gunData.ballistics = AccumulateValues(gunData.recoilPattern, RecoilCoefficient)
                 local count = #gunData.ballistics
                 while IsMouseButtonPressed(1) do
                     -- 记录当前时间
