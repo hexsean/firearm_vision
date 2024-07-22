@@ -1,57 +1,30 @@
 GunName = "None"
-RecoilFactor = 1
-Posture = 1
+RecoilCoefficient = 1
 IsRun = false
 ClickStartTime = 0
 ClickCurrentTime = 0
 BulletIndex = 0
 XCounter = 0
 YCounter = 0
-IsDebug = false
+IsDebug = true
 AimingModel = 1
 CycleDelay = 2
 ConfigPath = "C:/Users/Public/Downloads/pubg_config.lua"
 Guns = {
     m762 = {
-        interval = 87,
-        standingRecoilFactor = 1,
-        crouchingRecoilFactor = 0.83,
-        proneRecoilFactor = 0.55,
+        interval = 86,
         ballistics = {},
         recoilPattern = {
-            {1, 40},
-            {1, 28},
-            {1, 19},
-            {2, 30},
-            {1, 31},
-            {1, 32},
-            {2, 33},
-            {1, 37},
-            {9, 38},
-            {1, 39},
-            {1, 40},
-            {1, 40},
-            {2, 40},
-            {4, 43},
-            {7, 45},
-            {7, 51}
-        }
-    },
-    aug = {
-        interval = 83,
-        standingRecoilFactor = 1,
-        crouchingRecoilFactor = 0.83,
-        proneRecoilFactor = 0.55,
-        recoilPattern = {
-            {20, 20},
-            {20, 30}
+            {1, 37},{2, 25},{3, 32},{4, 34},{5, 37},{6, 38},{7, 42},{8, 44},{9, 44},{10, 45},{11, 47},{12, 45},{13, 49},{14, 47},{19, 55},{26, 53},{32, 50},{42, 20}
         }
     }
 }
+
 function LoadConfig()
     dofile(ConfigPath)
     IsRun = true
 end
+
 function ResetConfig()
     IsRun = false
     XCounter = 0
@@ -59,9 +32,11 @@ function ResetConfig()
     ClickCurrentTime = 0
     SetRandomseed()
 end
+
 function SetRandomseed()
     math.randomseed(GetDate("%H%M%S"):reverse())
 end
+
 function RandomSleep()
     if IsDebug then
         Sleep(CycleDelay)
@@ -69,21 +44,37 @@ function RandomSleep()
         Sleep(math.random(CycleDelay + CycleDelay+5))
     end
 end
-function ExpandRecoilPattern(recoilPattern)
-    local expanded = {}
-    for _, pair in ipairs(recoilPattern) do
-        local count = pair[1]
+
+function FillGaps(recoilPattern)
+    local newPattern = {}
+    local lastIndex = 0
+    for i, pair in ipairs(recoilPattern) do
+        local index = pair[1]
         local value = pair[2]
-        for i = 1, count do
-            table.insert(expanded, value)
+        if index > lastIndex + 1 then
+            for j = lastIndex + 1, index - 1 do
+                table.insert(newPattern, {j, recoilPattern[i-1][2]})
+            end
         end
+        table.insert(newPattern, {index, value})
+        lastIndex = index
     end
-    return expanded
+    return newPattern
 end
+
+function ExtractValues(recoilPattern)
+    local values = {}
+    for i, pair in ipairs(recoilPattern) do
+        table.insert(values, pair[2])
+    end
+    return values
+end
+
 function math.round(number, decimals)
     local power = 10^decimals
     return math.floor(number * power + 0.5) / power
 end
+
 function AccumulateValues(values, coefficient)
     local accumulated = {}
     local sum = 0
@@ -93,6 +84,7 @@ function AccumulateValues(values, coefficient)
     end
     return accumulated
 end
+
 function ApplyRecoil(gunData, bulletIndex)
     local x = 0
     if IsDebug then
@@ -101,18 +93,25 @@ function ApplyRecoil(gunData, bulletIndex)
     local y = math.ceil((ClickCurrentTime - ClickStartTime) / (gunData.interval * bulletIndex) * gunData.ballistics[bulletIndex]) - YCounter
     MoveMouseRelative(x, y)
     if IsDebug then
-    	OutputLogMessage("MoveMouseRelative ====> " .. "=== x: " .. x .. " === y: " .. y .. "\n")
+        OutputLogMessage("MoveMouseRelative ====> " .. "=== x: " .. x .. " === y: " .. y .. "\n")
     end
 
     XCounter = XCounter + x
-	YCounter = YCounter + y
+    YCounter = YCounter + y
     RandomSleep()
 end
+
 EnablePrimaryMouseButtonEvents(true)
+
+for _, gun in pairs(Guns) do
+    gun.recoilPattern = ExtractValues(FillGaps(gun.recoilPattern))
+end
+
 function OnEvent (event, arg, family)
     if IsDebug then
-    	OutputLogMessage("start => " .. "event: " .. event .. " arg: " .. arg .. "\n")
+        OutputLogMessage("start => " .. "event: " .. event .. " arg: " .. arg .. "\n")
     end
+
     if event == "MOUSE_BUTTON_PRESSED" and arg == 1 and family == "mouse" then
         ClickStartTime = GetRunningTime()
         Sleep(1)
@@ -120,21 +119,13 @@ function OnEvent (event, arg, family)
             LoadConfig()
             if GunName ~= "None" then
                 local gunData = Guns[GunName]
-                local coefficient = 0
-                if Posture == 1 then
-                	coefficient  = RecoilFactor * gunData.standingRecoilFactor
-                elseif Posture == 2 then
-                    coefficient  = RecoilFactor * gunData.crouchingRecoilFactor
-                elseif Posture == 3 then
-                    coefficient  = RecoilFactor * gunData.proneRecoilFactor
-                end
-                gunData.ballistics = AccumulateValues(ExpandRecoilPattern(gunData.recoilPattern), coefficient)
+                gunData.ballistics = AccumulateValues(gunData.recoilPattern, RecoilCoefficient)
                 local count = #gunData.ballistics
                 while IsMouseButtonPressed(1) do
                     ClickCurrentTime = GetRunningTime()
                     BulletIndex = math.ceil((ClickCurrentTime - ClickStartTime == 0 and 1 or (ClickCurrentTime - ClickStartTime) / gunData.interval))
                     if IsDebug then
-                    	OutputLogMessage("ApplyRecoil ====> " .. "BulletIndex: " .. BulletIndex .. " ClickCurrentTime: " .. ClickCurrentTime .. " ClickStartTime: " .. ClickStartTime .. " #gunData.ballistics: " .. count .. "\n")
+                        OutputLogMessage("ApplyRecoil ====> " .. "BulletIndex: " .. BulletIndex .. " ClickCurrentTime: " .. ClickCurrentTime .. " ClickStartTime: " .. ClickStartTime .. " #gunData.ballistics: " .. count .. "\n")
                     end
                     if BulletIndex > count then break end
                     ApplyRecoil(gunData, BulletIndex)
@@ -145,3 +136,8 @@ function OnEvent (event, arg, family)
         ResetConfig()
     end
 end
+
+
+
+
+

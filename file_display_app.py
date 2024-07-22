@@ -12,7 +12,7 @@ def load_config():
 
 
 config = load_config()
-file_paths = config["file_paths"]
+file_paths = config["lua_config_path"]
 
 
 def read_file(file_path):
@@ -25,8 +25,7 @@ def read_file(file_path):
 
 def update_content(interval, overlay):
     while True:
-        overlay.update_text1(read_file(file_paths[0]))
-        overlay.update_text2(read_file(file_paths[1]))
+        overlay.update_text1(read_file(file_paths))
         time.sleep(interval)
 
 
