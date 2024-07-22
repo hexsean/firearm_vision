@@ -1,5 +1,5 @@
 GunName = "None"
-RecoilFactor = 1
+RecoilCoefficient = 1
 IsRun = false
 ClickStartTime = 0
 ClickCurrentTime = 0
@@ -15,7 +15,7 @@ Guns = {
         interval = 86,
         ballistics = {},
         recoilPattern = {
-            {1, 37},{2, 25},{3, 32},{4, 34},{5, 37},{6, 39},{7, 44},{8, 46},{9, 46},{10, 45},{11, 47},{12, 45},{13, 49},{19, 55},{42, 20}
+            {1, 37},{2, 25},{3, 32},{4, 34},{5, 37},{6, 38},{7, 42},{8, 44},{9, 44},{10, 45},{11, 47},{12, 45},{13, 49},{14, 47},{19, 55},{26, 53},{32, 50},{42, 20}
         }
     }
 }
@@ -119,7 +119,7 @@ function OnEvent (event, arg, family)
             LoadConfig()
             if GunName ~= "None" then
                 local gunData = Guns[GunName]
-                gunData.ballistics = AccumulateValues(gunData.recoilPattern, RecoilFactor)
+                gunData.ballistics = AccumulateValues(gunData.recoilPattern, RecoilCoefficient)
                 local count = #gunData.ballistics
                 while IsMouseButtonPressed(1) do
                     ClickCurrentTime = GetRunningTime()
