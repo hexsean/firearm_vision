@@ -171,21 +171,45 @@ function OnEvent (event, arg, family)
         if (AimingModel == 1 and IsMouseButtonPressed(3)) or AimingModel == 0 then
             LoadConfig()
             if GunName ~= "None" then
-                local gunData = Guns[GunName]
-                -- 计算弹道
-                gunData.ballistics = AccumulateValues(gunData.recoilPattern, RecoilCoefficient)
-                local count = #gunData.ballistics
-                while IsMouseButtonPressed(1) do
-                    -- 记录当前时间
-                    ClickCurrentTime = GetRunningTime()
-                    -- 计算当前是第几颗子弹
-                    BulletIndex = math.ceil((ClickCurrentTime - ClickStartTime == 0 and 1 or (ClickCurrentTime - ClickStartTime) / gunData.interval))
-                    if IsDebug then
-                    	OutputLogMessage("ApplyRecoil ====> " .. "BulletIndex: " .. BulletIndex .. " ClickCurrentTime: " .. ClickCurrentTime .. " ClickStartTime: " .. ClickStartTime .. " #gunData.ballistics: " .. count .. "\n")
+                if GunName ~= "mk47" and GunName ~= "m16a4" then
+                   local gunData = Guns[GunName]
+                    -- 计算弹道
+                    gunData.ballistics = AccumulateValues(gunData.recoilPattern, RecoilCoefficient)
+                    local count = #gunData.ballistics
+                    while IsMouseButtonPressed(1) do
+                        -- 记录当前时间
+                        ClickCurrentTime = GetRunningTime()
+                        -- 计算当前是第几颗子弹
+                        BulletIndex = math.ceil((ClickCurrentTime - ClickStartTime == 0 and 1 or (ClickCurrentTime - ClickStartTime) / gunData.interval))
+                        if IsDebug then
+                            OutputLogMessage("ApplyRecoil ====> " .. "BulletIndex: " .. BulletIndex .. " ClickCurrentTime: " .. ClickCurrentTime .. " ClickStartTime: " .. ClickStartTime .. " #gunData.ballistics: " .. count .. "\n")
+                        end
+                        -- 当前子弹序号不能超过最大值
+                        if BulletIndex > count then break end
+                        ApplyRecoil(gunData, BulletIndex)
                     end
-                    -- 当前子弹序号不能超过最大值
-                    if BulletIndex > count then break end
-                    ApplyRecoil(gunData, BulletIndex)
+                else
+                   local gunData = Guns[GunName]
+                    -- 计算弹道
+                    gunData.ballistics = AccumulateValues(gunData.recoilPattern, RecoilCoefficient)
+                    local count = #gunData.ballistics
+                    local lastBulletIndex = 1
+                    while IsMouseButtonPressed(1) do
+                        -- 记录当前时间
+                        ClickCurrentTime = GetRunningTime()
+                        -- 计算当前是第几颗子弹
+                        BulletIndex = math.ceil((ClickCurrentTime - ClickStartTime == 0 and 1 or (ClickCurrentTime - ClickStartTime) / gunData.interval))
+                        if IsDebug then
+                            OutputLogMessage("ApplyRecoil ====> " .. "BulletIndex: " .. BulletIndex .. " ClickCurrentTime: " .. ClickCurrentTime .. " ClickStartTime: " .. ClickStartTime .. " #gunData.ballistics: " .. count .. "\n")
+                        end
+                        -- 当前子弹序号不能超过最大值
+                        if BulletIndex > count then break end
+                        ApplyRecoil(gunData, BulletIndex)
+                        if BulletIndex > lastBulletIndex then
+                        	lastBulletIndex = BulletIndex
+                        	PressAndReleaseKey("F8")
+                        end
+                    end
                 end
             end
         end
