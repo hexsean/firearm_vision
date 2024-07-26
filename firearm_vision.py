@@ -148,8 +148,8 @@ firearm_coefficient_list = {
 # 枪口列表(无, 步枪消焰, 步枪补偿)
 muzzle_list = ['xiaoyan', 'buchang']
 muzzle_coefficient_list = {
-    'xiaoyan': 0.86,
-    'buchang': 0.79,
+    'xiaoyan': 1.162,
+    'buchang': 1,
 }
 
 # 握把列表(无, 半截式握把, 轻型握把, 垂直握把, 拇指握把)
@@ -190,7 +190,7 @@ def calculate_recoil_coefficient():
     # 垂直灵敏度系数
     vertical_coefficient = 1 / get_vertical_sensitivity_magnification()
 
-    muzzle_coefficient = muzzle_coefficient_list.get(last_muzzle_name, 1)
+    muzzle_coefficient = muzzle_coefficient_list.get(last_muzzle_name, 1.265)
     grip_coefficient = grip_coefficient_list.get(last_grip_name, 1)
     butt_coefficient = butt_coefficient_list.get(last_butt_name, 1)
     sight_coefficient = sight_coefficient_list.get(last_sight_name, 1)

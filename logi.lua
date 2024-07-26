@@ -46,11 +46,144 @@ ConfigPath = "C:/Users/Public/Downloads/pubg_config.lua"
 
 --[[枪械参数]]
 Guns = {
+    akm = {
+        interval = 100,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    qbz = {
+        interval = 92,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
     m762 = {
         interval = 86,
         ballistics = {},
         recoilPattern = {
-            {1, 37},{2, 25},{3, 32},{4, 34},{5, 37},{6, 38},{7, 42},{8, 44},{9, 44},{10, 45},{11, 47},{12, 45},{13, 49},{14, 47},{19, 55},{26, 53},{32, 50},{42, 20}
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    groza = {
+        interval = 80,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    scarl = {
+        interval = 92,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    m16a4 = {
+        interval = 100,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    aug = {
+        interval = 83,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    m416 = {
+        interval = 86,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    k2 = {
+        interval = 86,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    g36c = {
+        interval = 86,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    mk47 = {
+        interval = 100,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    ace32 = {
+        interval = 88,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    ump = {
+        interval = 90,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    mp5k = {
+        interval = 67,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    vkt = {
+        interval = 54,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    p90 = {
+        interval = 60,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    m249 = {
+        interval = 75,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    dp28 = {
+        interval = 109,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    mg3 = {
+        interval = 91,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
+        }
+    },
+    famae = {
+        interval = 67,
+        ballistics = {},
+        recoilPattern = {
+            { 1, 37 }, { 2, 25 }, { 3, 32 }, { 4, 34 }, { 5, 37 }, { 6, 38 }, { 7, 42 }, { 8, 44 }, { 9, 44 }, { 10, 45 }, { 11, 47 }, { 12, 45 }, { 13, 49 }, { 14, 47 }, { 19, 55 }, { 26, 53 }, { 32, 50 }, { 42, 20 }
         }
     }
 }
@@ -81,7 +214,7 @@ function RandomSleep()
     if IsDebug then
         Sleep(CycleDelay)
     else
-        Sleep(math.random(CycleDelay + CycleDelay+5))
+        Sleep(math.random(CycleDelay + CycleDelay + 5))
     end
 end
 
@@ -96,11 +229,11 @@ function FillGaps(recoilPattern)
 
         if index > lastIndex + 1 then
             for j = lastIndex + 1, index - 1 do
-                table.insert(newPattern, {j, recoilPattern[i-1][2]})
+                table.insert(newPattern, { j, recoilPattern[i - 1][2] })
             end
         end
 
-        table.insert(newPattern, {index, value})
+        table.insert(newPattern, { index, value })
         lastIndex = index
     end
 
@@ -118,7 +251,7 @@ end
 
 -- 随机数
 function math.round(number, decimals)
-    local power = 10^decimals
+    local power = 10 ^ decimals
     return math.floor(number * power + 0.5) / power
 end
 
@@ -133,21 +266,22 @@ function AccumulateValues(values, coefficient)
     return accumulated
 end
 
-
 -- 压枪
 function ApplyRecoil(gunData, bulletIndex)
     local x = 0
     if IsDebug then
-        x = math.ceil((ClickCurrentTime - ClickStartTime) / (gunData.interval * (bulletIndex)) * bulletIndex * 20) - XCounter
+        x = math.ceil((ClickCurrentTime - ClickStartTime) / (gunData.interval * (bulletIndex)) * bulletIndex * 20) -
+            XCounter
     end
-    local y = math.ceil((ClickCurrentTime - ClickStartTime) / (gunData.interval * bulletIndex) * gunData.ballistics[bulletIndex]) - YCounter
+    local y = math.ceil((ClickCurrentTime - ClickStartTime) / (gunData.interval * bulletIndex) *
+        gunData.ballistics[bulletIndex]) - YCounter
     MoveMouseRelative(x, y)
     if IsDebug then
-    	OutputLogMessage("MoveMouseRelative ====> " .. "=== x: " .. x .. " === y: " .. y .. "\n")
+        OutputLogMessage("MoveMouseRelative ====> " .. "=== x: " .. x .. " === y: " .. y .. "\n")
     end
 
     XCounter = XCounter + x
-	YCounter = YCounter + y
+    YCounter = YCounter + y
     RandomSleep()
 end
 
@@ -159,9 +293,9 @@ for _, gun in pairs(Guns) do
     gun.recoilPattern = ExtractValues(FillGaps(gun.recoilPattern))
 end
 
-function OnEvent (event, arg, family)
+function OnEvent(event, arg, family)
     if IsDebug then
-    	OutputLogMessage("start => " .. "event: " .. event .. " arg: " .. arg .. "\n")
+        OutputLogMessage("start => " .. "event: " .. event .. " arg: " .. arg .. "\n")
     end
     -- 按下鼠标左键, 加载配置项目 (AimingModel == 0时, 仅需按下左键, AimingModel == 1时, 需保持右键按下状态)
     if event == "MOUSE_BUTTON_PRESSED" and arg == 1 and family == "mouse" then
@@ -172,7 +306,7 @@ function OnEvent (event, arg, family)
             LoadConfig()
             if GunName ~= "None" then
                 if GunName ~= "mk47" and GunName ~= "m16a4" then
-                   local gunData = Guns[GunName]
+                    local gunData = Guns[GunName]
                     -- 计算弹道
                     gunData.ballistics = AccumulateValues(gunData.recoilPattern, RecoilCoefficient)
                     local count = #gunData.ballistics
@@ -182,14 +316,19 @@ function OnEvent (event, arg, family)
                         -- 计算当前是第几颗子弹
                         BulletIndex = math.ceil((ClickCurrentTime - ClickStartTime == 0 and 1 or (ClickCurrentTime - ClickStartTime) / gunData.interval))
                         if IsDebug then
-                            OutputLogMessage("ApplyRecoil ====> " .. "BulletIndex: " .. BulletIndex .. " ClickCurrentTime: " .. ClickCurrentTime .. " ClickStartTime: " .. ClickStartTime .. " #gunData.ballistics: " .. count .. "\n")
+                            OutputLogMessage("ApplyRecoil ====> " ..
+                                "BulletIndex: " ..
+                                BulletIndex ..
+                                " ClickCurrentTime: " ..
+                                ClickCurrentTime ..
+                                " ClickStartTime: " .. ClickStartTime .. " #gunData.ballistics: " .. count .. "\n")
                         end
                         -- 当前子弹序号不能超过最大值
                         if BulletIndex > count then break end
                         ApplyRecoil(gunData, BulletIndex)
                     end
                 else
-                   local gunData = Guns[GunName]
+                    local gunData = Guns[GunName]
                     -- 计算弹道
                     gunData.ballistics = AccumulateValues(gunData.recoilPattern, RecoilCoefficient)
                     local count = #gunData.ballistics
@@ -200,20 +339,25 @@ function OnEvent (event, arg, family)
                         -- 计算当前是第几颗子弹
                         BulletIndex = math.ceil((ClickCurrentTime - ClickStartTime == 0 and 1 or (ClickCurrentTime - ClickStartTime) / gunData.interval))
                         if IsDebug then
-                            OutputLogMessage("ApplyRecoil ====> " .. "BulletIndex: " .. BulletIndex .. " ClickCurrentTime: " .. ClickCurrentTime .. " ClickStartTime: " .. ClickStartTime .. " #gunData.ballistics: " .. count .. "\n")
+                            OutputLogMessage("ApplyRecoil ====> " ..
+                                "BulletIndex: " ..
+                                BulletIndex ..
+                                " ClickCurrentTime: " ..
+                                ClickCurrentTime ..
+                                " ClickStartTime: " .. ClickStartTime .. " #gunData.ballistics: " .. count .. "\n")
                         end
                         -- 当前子弹序号不能超过最大值
                         if BulletIndex > count then break end
                         ApplyRecoil(gunData, BulletIndex)
                         if BulletIndex > lastBulletIndex then
-                        	lastBulletIndex = BulletIndex
-                        	PressAndReleaseKey("F8")
+                            lastBulletIndex = BulletIndex
+                            PressAndReleaseKey("F8")
                         end
                     end
                 end
             end
         end
-    -- 松开鼠标左键, 恢复动态参数默认值
+        -- 松开鼠标左键, 恢复动态参数默认值
     elseif event == "MOUSE_BUTTON_RELEASED" and arg == 1 and family == "mouse" then
         ResetConfig()
     end
