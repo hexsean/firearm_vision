@@ -6,9 +6,9 @@
   "vertical_sensitivity_magnification": 1,
   "weapon_screenshot_area": {
     "left": 2740,
-    "top": 1200,
+    "top": 1260,
     "width": 300,
-    "height": 240
+    "height": 150
   },
   "muzzle_screenshot_area": {
     "left": 2240,

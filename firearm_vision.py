@@ -124,7 +124,7 @@ firearm_list = ['akm',
 firearm_coefficient_list = {
     'akm': [1, 1, 1, 1],
     'qbz': [1, 1, 1, 1],
-    'm762': [1, 1, 0.83, 0.55],
+    'm762': [1, 1, 0.78, 0.545],
     'groza': [1, 1, 1, 1],
     'scarl': [1, 1, 1, 1],
     'm16a4': [1, 1, 1, 1],
@@ -165,7 +165,7 @@ grip_coefficient_list = {
 butt_list = ['zhongxing', 'zhanshu']
 butt_coefficient_list = {
     'zhongxing': 0.895,
-    'zhanshu': 0.965,
+    'zhanshu': 0.99,
 }
 
 # 瞄准镜列表(无, 红点, 全息, 二倍, 三倍, 四倍)
@@ -259,7 +259,8 @@ def get_pixel_color(x, y):
 
 # 判断是否佩戴全自动或半自动武器
 def is_wear_fully_automatic_rifle():
-    y = 1341
+    # y = 1341
+    y = 1336
 
     # 判断是否打能量
     color1 = get_pixel_color(1916, 1330)
@@ -434,6 +435,37 @@ def accessories_monitor_screen(grips_template_list, muzzles_template_list, butt_
         time.sleep(interval)
 
 
+def monitor_firearms(interval, overlay_model):
+    global posture_state
+    while True:
+        posture = None
+        color1 = get_pixel_color(1415, 1333)
+        r, g, b = color1
+        # 加速图标亮起, 认为此时打了能量, 上移能量条的高度
+        if r > 200 and g > 200 and b > 200:
+            posture = 2
+        else:
+            color2 = get_pixel_color(1420, 1351)
+            r2, g2, b2 = color2
+            if r2 > 200 and g2 > 200 and b2 > 200:
+                posture = 3
+            else:
+                posture = 1
+        if posture_state != posture:
+            posture_state = posture
+            update_weapon_and_coefficient()
+        time.sleep(interval)
+
+
+# 监控姿势主入口
+def monitor_posture_main(overlay_model):
+    print("姿势监控中...\n")
+
+    # 启动监控线程
+    monitor_thread = threading.Thread(target=monitor_firearms, args=(0.05, overlay_model))
+    monitor_thread.start()
+
+
 # 监控枪械主入口
 def monitor_firearms_main(overlay_model):
     print("枪械监控中...\n")
@@ -455,7 +487,7 @@ def monitor_accessories_main(overlay_model):
 
     # 启动监控线程
     monitor_thread = threading.Thread(target=accessories_monitor_screen,
-                                      args=(grips_templates, muzzles_templates, butt_templates, 0.2, overlay_model))
+                                      args=(grips_templates, muzzles_templates, butt_templates, 0.1, overlay_model))
     monitor_thread.start()
 
 
@@ -507,7 +539,7 @@ def on_press(key):
 if __name__ == "__main__":
     print("Starting the application...")
     # 设置按键监听器
-    keyboard.Listener(on_press=on_press).start()
+    # keyboard.Listener(on_press=on_press).start()
     print("请保持窗口开启 ==> \n")
     overlay = None
     if is_open_overlay():
@@ -523,7 +555,8 @@ if __name__ == "__main__":
     posture_state = 1
 
     update_weapon_and_coefficient()
-
+    # 启动监控姿势
+    monitor_posture_main(overlay)
     # 启动枪械监控线程
     monitor_firearms_main(overlay)
     # 启动配件监控线程
