@@ -20,6 +20,8 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
 # =========================================>> 加载动态配置 <<============================================
+
+
 def load_config():
     with open('config.json', 'r') as f:
         return json.load(f)
@@ -654,7 +656,7 @@ if __name__ == "__main__":
     overlay = None
     if is_open_overlay():
         # 创建监控窗口
-        overlay = TextOverlay(tk.Tk(), '50', '300', "", "持续监控中...")
+        overlay = TextOverlay(tk.Tk(), config["overlay_position"][0], config["overlay_position"][1])
         monitor_coefficient_main(overlay)
 
     # 重置枪械, 姿势, 和配件

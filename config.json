@@ -2,6 +2,7 @@
   "lua_config_path": "C:/Users/Public/Downloads/pubg_config.lua",
   "screen_resolution": [3440, 1440],
   "is_open_overlay": true,
+  "overlay_position": [50, 300],
   "is_open_screenshot_of_keystrokes": false,
   "vertical_sensitivity_magnification": 1,
   "weapon_screenshot_area": {
