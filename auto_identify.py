@@ -178,8 +178,6 @@ sight_coefficient_list = {
     'four': 1,
 }
 
-posture_lock = threading.Lock()
-
 # =========================================>> tool函数初始化 <<============================================
 
 
@@ -426,7 +424,6 @@ def accessories_monitor_screen(grips_template_list, muzzles_template_list, butt_
             print(f"检测背包完毕 ===> 耗时: {(time.time() - start_time) * 1000:.2f} ms")
             overlay_model.update_text3(f"检测背包完毕 ===> 耗时: {(time.time() - start_time) * 1000:.2f} ms")
         else:
-            print(f"未打开背包 耗时: {(time.time() - start_time) * 1000:.2f} ms")
             if overlay_model is not None:
                 overlay_model.update_text3(f"未打开背包 当前枪口{last_muzzle_name}, 握把{last_grip_name}, 枪托{last_butt_name}, 瞄具{last_sight_name}, 耗时: {(time.time() - start_time) * 1000:.2f} ms")
                 overlay_model.update_text4("")
@@ -457,10 +454,21 @@ def monitor_firearms(interval, overlay_model):
         time.sleep(interval)
 
 
+def monitor_coefficient(interval, overlay_model):
+    while True:
+        try:
+            with open(get_lua_config_path(), 'r', encoding='utf-8') as file:
+                lua_config = file.read()
+            if lua_config:
+                overlay_model.update_text8(lua_config)
+        except Exception as e:
+            print(e)
+        time.sleep(interval)
+
+
 # 监控姿势主入口
 def monitor_posture_main(overlay_model):
     print("姿势监控中...\n")
-
     # 启动监控线程
     monitor_thread = threading.Thread(target=monitor_firearms, args=(0.05, overlay_model))
     monitor_thread.start()
@@ -471,7 +479,6 @@ def monitor_firearms_main(overlay_model):
     print("枪械监控中...\n")
     # 加载模板
     firearms_templates = load_templates("firearms", firearm_list)
-
     # 启动监控线程
     monitor_thread = threading.Thread(target=firearm_monitor_screen, args=(firearms_templates, 0.2, overlay_model))
     monitor_thread.start()
@@ -484,26 +491,23 @@ def monitor_accessories_main(overlay_model):
     grips_templates = load_templates("grips", grip_list)
     muzzles_templates = load_templates("muzzles", muzzle_list)
     butt_templates = load_templates("butt", butt_list)
-
     # 启动监控线程
     monitor_thread = threading.Thread(target=accessories_monitor_screen,
                                       args=(grips_templates, muzzles_templates, butt_templates, 0.1, overlay_model))
     monitor_thread.start()
 
 
+def monitor_coefficient_main(overlay_model):
+    print("最终系数监控中...\n")
+    # 启动监控线程
+    monitor_thread = threading.Thread(target=monitor_coefficient, args=(0.1, overlay_model))
+    monitor_thread.start()
+
+
+# 按键监控截图
 def on_press(key):
-    global posture_state
     try:
-        char = key.char.lower()  # 将字符转为小写
-        if char == 'c' or char == '\x03':
-            with posture_lock:  # 加锁
-                posture_state = 2 if posture_state != 2 else 1
-                update_weapon_and_coefficient()
-        elif char == 'z' or char == '\x1a':
-            with posture_lock:  # 加锁
-                posture_state = 3 if posture_state != 3 else 1
-                update_weapon_and_coefficient()
-        elif is_open_screenshot_of_keystrokes() and key.char == 'k':
+        if is_open_screenshot_of_keystrokes() and key.char == 'k':
             print("正在截取屏幕...")
             dir_name = "screenshots"
             if not os.path.exists(dir_name):
@@ -522,39 +526,43 @@ def on_press(key):
                         adaptive_threshold(convert_to_gray(take_screenshot_mss(get_muzzle_screenshot_area()))))
             cv2.imwrite(butt_filename,
                         adaptive_threshold(convert_to_gray(take_screenshot_mss(get_butt_screenshot_area()))))
-
-        elif key == keyboard.Key.space:
-            with posture_lock:  # 加锁
-                posture_state = 1
-                update_weapon_and_coefficient()
     except AttributeError:
-        if key == keyboard.Key.space:
-            with posture_lock:  # 加锁
-                posture_state = 1
-                update_weapon_and_coefficient()
+        print(AttributeError)
 
 # =========================================>> 线程初始化 <<============================================
 
 
-if __name__ == "__main__":
-    print("Starting the application...")
-    # 设置按键监听器
-    # keyboard.Listener(on_press=on_press).start()
-    print("请保持窗口开启 ==> \n")
-    overlay = None
-    if is_open_overlay():
-        # 创建监控窗口
-        overlay = TextOverlay(tk.Tk(), '50', '300', "", "持续监控中...")
-
-    # 重置枪械, 姿势, 和配件
+def reset_all():
+    global last_weapon_name
+    global last_muzzle_name
+    global last_grip_name
+    global last_butt_name
+    global last_sight_name
+    global posture_state
     last_weapon_name = "None"
     last_muzzle_name = 'None'
     last_grip_name = 'None'
     last_butt_name = 'None'
     last_sight_name = 'None'
     posture_state = 1
-
     update_weapon_and_coefficient()
+
+
+if __name__ == "__main__":
+    print("Starting the application...")
+    # 设置按键监听器
+    if is_open_screenshot_of_keystrokes():
+        keyboard.Listener(on_press=on_press).start()
+    print("程序运行中,请保持窗口开启 =====> \n")
+    overlay = None
+    if is_open_overlay():
+        # 创建监控窗口
+        overlay = TextOverlay(tk.Tk(), '50', '300', "", "持续监控中...")
+        monitor_coefficient_main(overlay)
+
+    # 重置枪械, 姿势, 和配件
+    reset_all()
+
     # 启动监控姿势
     monitor_posture_main(overlay)
     # 启动枪械监控线程

@@ -1,3 +1,3 @@
 @echo off
-.\venv\Scripts\python firearm_vision.py
+.\venv\Scripts\python auto_identify.py
 cmd /k
