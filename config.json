@@ -1,8 +1,14 @@
 {
   "lua_config_path": "C:/Users/Public/Downloads/pubg_config.lua",
-  "screen_resolution": [3440, 1440],
+  "screen_resolution": [
+    3440,
+    1440
+  ],
   "is_open_overlay": true,
-  "overlay_position": [50, 300],
+  "overlay_position": [
+    50,
+    300
+  ],
   "is_open_screenshot_of_keystrokes": false,
   "vertical_sensitivity_magnification": 1,
   "weapon_screenshot_area": {
@@ -35,27 +41,109 @@
     "width": 22,
     "height": 22
   },
-
-  "weapon_recognition_confidence_threshold": {
-    "akm": 0.30,
-    "qbz": 0.30,
-    "m762": 0.30,
-    "groza": 0.30,
-    "scarl": 0.30,
-    "m16a4": 0.30,
-    "aug": 0.30,
-    "m416": 0.30,
-    "k2": 0.30,
-    "g36c": 0.30,
-    "mk47": 0.30,
-    "ace32": 0.30,
-    "ump": 0.30,
-    "mp5k": 0.30,
-    "vkt": 0.30,
-    "p90": 0.30,
-    "m249": 0.30,
-    "dp28": 0.30,
-    "mg3": 0.30,
-    "famae": 0.30
+  "firearms": {
+    "akm": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "qbz": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "m762": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 0.78, 0.545]
+    },
+    "groza": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "scarl": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "m16a4": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "aug": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "m416": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "k2": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "g36c": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "mk47": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "ace32": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "ump": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "mp5k": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "vkt": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "p90": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "m249": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "dp28": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "mg3": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    },
+    "famae": {
+      "recognition_confidence_threshold": 0.3,
+      "coefficient_list": [1, 1, 1, 1]
+    }
+  },
+  "firearms_accessories_list": {
+    "muzzle_list": {
+      "xiaoyan": 1.162,
+      "buchang": 1
+    },
+    "grip_list": {
+      "banjie": 0.818,
+      "qingxing": 0.86,
+      "chuizhi": 0.79,
+      "muzhi": 0.888
+    },
+    "butt_list": {
+      "zhongxing": 0.895,
+      "zhanshu": 0.99
+    },
+    "sight_list": {
+      "hongdian": 1,
+      "quanxi": 1,
+      "two": 1,
+      "three": 1,
+      "four": 1
+    }
   }
 }
