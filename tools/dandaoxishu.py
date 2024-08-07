@@ -1,5 +1,6 @@
 import re
 
+
 def multiply_with_coefficient(data, coefficient):
     """将输入数据列表中的第二个元素乘以系数。
 
@@ -15,6 +16,7 @@ def multiply_with_coefficient(data, coefficient):
         x, y = pair  # 拆包列表元素
         result.append([x-1, round(y * coefficient)])  # 保留三位小数
     return result
+
 
 # {1, 26}, {2, 17}, {3, 18}, {4, 18}, {5, 22}, {6, 23}, {7, 24}, {8, 24}, {9, 24}, {10, 24}, {11, 27}, {12, 29}, {13, 29}, {14, 28}, {15, 28}, {16, 28}, {17, 30}, {18, 28}, {19, 33}, {26, 31}, {32, 30}, {42, 12}
 def main():

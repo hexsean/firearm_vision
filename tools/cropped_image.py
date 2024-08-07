@@ -1,6 +1,7 @@
 from PIL import Image
 import os
 
+# 用于裁剪配件, 只取中间部分匹配
 if __name__ == '__main__':
     # 指定原始图片的目录
     src_directory = r"E:\idea_workspace\vision\image\copy\muzzles"

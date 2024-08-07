@@ -1,4 +1,6 @@
+import sys
 from datetime import datetime
+import datetime
 from typing import List
 
 import mss
@@ -11,7 +13,11 @@ import json
 from pynput import keyboard
 import tkinter as tk
 from text_overlay import TextOverlay
-
+import base64
+import re
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
 
 # =========================================>> 加载动态配置 <<============================================
 def load_config():
@@ -78,7 +84,36 @@ def get_vertical_sensitivity_magnification():
 
 
 # =========================================>> 初始化静态配置 <<============================================
-
+privateKey = """
+-----BEGIN PRIVATE KEY-----
+MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDVLOXv9jUG35lf
+x7C0hI2CwcJvZQUbwowPdKHpyoOceCP23fZrntCJV2aNXnuDtmfCmirgLI3N814L
+3m/IN3pbCOY8SVbKXWpeWTUHKQgluQqQREkDU6InflKkiMF2/rJWDY2m5tkhgYM4
+0dzk25U43xEABZy1KnWCfQQQypAtpCQOD4Mb96UueY5idhlwLfkoDq0IIIRlKSD+
+Gzs9iY0HXMV+V86hqz/cRgy6gdx2hyMyHjcWg5O/9n+iITSo138UxCHDUvrxR8Q0
+fJ1vJwDEj1DdqIHx7CMa0PRexa6AvEr/LTlcGOKBnPijw5Gbgw88wAgurGC0I6XS
+AHl+MJZDAgMBAAECggEAB/duE7omlX5XW9TOyJLoO5nkcMechG2QULw3QtFD0DNN
+229vF+rZozr7b6QMx0l9S4X5vTfyXV8kxW/Hdfrbco8najBZcyWWOza9PGpu+K3s
+yaMWUW6s3Cn536vmraeWCuY7GXYoviT6E5kFgXNSpSCc9jG/f1EPZCl/ieXFXpc2
+xOaQeLx+v3M+vY8YgCpdJuO6vK/V3efVUhWUncz41ObunvUhGXx9tZQv4Qzfalz1
+lHQpd6iRM7PIn/grT369nRnsYvKlEx/hIiqlyLpu3HxrB80ebVevM0aOoxz93+9M
+JaTs8v7unPGQ/s5vqe9jCNZaXiE/ZUHAIa24okZjrQKBgQD2T8P38HnhwLL2yyZl
+JkgAzfqKzmP/+ocmvQkyHuLspWxiP/vzq+Zgmk2jBOCCXJosM5mtROsfqVjZeToG
+2XYnTzvbck67HEn4fjGlBGWCBTXPcc77Yp6pnkAZ+AWBfTqUdHxCjbvmcxc6rVAT
+g5op6RcNWEPEFnvyy9snvgr71QKBgQDdj3e8gl9q+KNvLXqobr2AyIExUh45tT4v
+OOkO4YvsgfLOiHDtukjd/v90kp9wce6A+gzUicznqktRjg2HJQiN/AnVyn08LigD
+srEzigDuwTyaQgqYBQECgY5e/cs0WwdXFNTS7WKDV8sZ2pFEmbmVdqK0TVivueEL
+CrDLDXnNtwKBgQDUAGPUDA9b19gxwzkQ5poi1ydGQc6gjKm3Fg3MLflzZg6boibh
+3Js1mpooLhJvIfUxBljHYgJeBgyLYmQncRTZUMFcaE6LjhW85CEmv1n/RyzBmFtm
+08NsiuDxeSCEC51YGcq6HfQUrgrYXkQGB8exOwa0Xbw2EoQsvnmrA0/A4QKBgQDE
+sEyXqRWUHU7ZsAIn7MeGwHkQk9oJWQDvYxJjB4/0Uhh/iVjXcnylt26IynGInVwi
+W9lwBTVGpENhDz6rLxE9GvaQOMac2kzjm4r8OhNB4YIvX1mQQ0D2PJVrdtsii30k
+rXWSGvNNrm67cPFteRrruPoQHmoQ9m72InN4j2oGWQKBgQDRgrT4zH2WzOeP4Gcg
+7IlO4QmXLP2GQ4082YsiHw6jQV9xV8Ae6miJbKbLpWpNy6/pbS+/7kAv3cP8vjX3
+SGcY6bTvTalstJfiGi2j5arCFKnt1KEyHH98UCu6reR96WSZe+z1+fksqEg/fGC5
+anPr6Cll/DsAcaY61iX+B1Rxsg==
+-----END PRIVATE KEY-----
+"""
 
 # 当前佩戴的武器名称
 last_weapon_name = 'None'
@@ -548,8 +583,70 @@ def reset_all():
     update_weapon_and_coefficient()
 
 
+def decrypt_message(ciphertext_str, private_pem_str):
+    private_key = serialization.load_pem_private_key(
+        private_pem_str.encode("utf-8"),
+        password=None,
+    )
+    ciphertext = base64.b64decode(ciphertext_str.encode("utf-8"))
+    plaintext = private_key.decrypt(
+        ciphertext,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    plaintext_str = plaintext.decode("utf-8")
+    return plaintext_str
+
+
+def verify_activation_code():
+    try:
+        with open('激活码.txt', 'r', encoding='utf-8') as file:
+            activation_code = file.read()
+        if activation_code:
+            plaintext_str = decrypt_message(activation_code, privateKey)
+            is_succeed = False
+            if plaintext_str.startswith("expiration_"):
+                match = re.search(r"expiration_(\d+)", plaintext_str)
+                if match:
+                    timestamp_str = match.group(1)
+                    timestamp = int(timestamp_str)
+                    date = datetime.datetime.fromtimestamp(timestamp)
+                    if date:
+                        if datetime.datetime.now() > date:
+                            print("===>  激活码已过期,请联系客服获取最新激活码")
+                            exit_application()
+                        else:
+                            # 格式化输出日期和时间
+                            is_succeed = True
+                            formatted_date = date.strftime("%Y-%m-%d %H:%M:%S")
+                            print("===>  激活成功! 有效期至:" + formatted_date)
+
+            if not is_succeed:
+                print("===>  请输入有效的激活码")
+                exit_application()
+        else:
+            print("===>  请输入激活码")
+            exit_application()
+
+    except Exception as e:
+        print("===>  激活码无效")
+        exit_application()
+
+
+def exit_application():
+    for i in range(3, 0, -1):  # 倒计时 3 秒
+        print(f"程序将在 {i} 秒后退出...")
+        time.sleep(1)  # 暂停 1 秒
+    sys.exit()
+
+
 if __name__ == "__main__":
     print("Starting the application...")
+    # 验证激活码
+    verify_activation_code()
     # 设置按键监听器
     if is_open_screenshot_of_keystrokes():
         keyboard.Listener(on_press=on_press).start()
