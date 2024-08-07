@@ -1,5 +1,4 @@
 import sys
-from datetime import datetime
 import datetime
 from typing import List
 
@@ -207,11 +206,21 @@ def is_open_backpack():
     return r > 250 and g > 250 and b > 250
 
 
+update_last_weapon_name = None
+update_coefficient = 1
+
+
 # 更新武器和后坐力系数
 def update_weapon_and_coefficient():
-    with open(lua_config_path, 'w', encoding='utf-8') as file:
-        file.write(f"GunName = '{last_weapon_name}'\n")
-        file.write(f"RecoilCoefficient = {calculate_recoil_coefficient()}\n")
+    global update_last_weapon_name
+    global update_coefficient
+    coefficient = calculate_recoil_coefficient()
+    if update_last_weapon_name != last_weapon_name or update_coefficient != coefficient:
+        update_last_weapon_name = last_weapon_name
+        update_coefficient = coefficient
+        with open(lua_config_path, 'w', encoding='utf-8') as file:
+            file.write(f"GunName = '{update_last_weapon_name}'\n")
+            file.write(f"RecoilCoefficient = {update_coefficient}\n")
 
 
 # =========================================>> 核心识别逻辑 <<============================================
@@ -427,27 +436,27 @@ def monitor_coefficient_main(overlay_model):
 # 按键监控截图
 def on_press(key):
     try:
-        if is_open_screenshot_of_keystrokes and key.char == 'k':
+        char = key.char.lower()
+        if is_open_screenshot_of_keystrokes and char == 'k':
             print("正在截取屏幕...")
             dir_name = "screenshots"
             if not os.path.exists(dir_name):
                 os.makedirs(dir_name)
             # 保存截图用于调试
-            weapon_filename = os.path.join(dir_name, f"weapon_ad_{datetime.now().strftime('%Y%m%d_%H%M%S%f')}.png")
-            grip_filename = os.path.join(dir_name, f"grip_ad_{datetime.now().strftime('%Y%m%d_%H%M%S%f')}.png")
-            muzzle_filename = os.path.join(dir_name, f"muzzle_ad_{datetime.now().strftime('%Y%m%d_%H%M%S%f')}.png")
-            butt_filename = os.path.join(dir_name, f"butt_ad_{datetime.now().strftime('%Y%m%d_%H%M%S%f')}.png")
+            # weapon_filename = os.path.join(dir_name, f"weapon_ad_{datetime.now().strftime('%Y%m%d_%H%M%S%f')}.png")
+            # grip_filename = os.path.join(dir_name, f"grip_ad_{datetime.now().strftime('%Y%m%d_%H%M%S%f')}.png")
+            muzzle_filename = os.path.join(dir_name, f"muzzle_ad_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S%f')}.png")
+            # butt_filename = os.path.join(dir_name, f"butt_ad_{datetime.now().strftime('%Y%m%d_%H%M%S%f')}.png")
 
-            cv2.imwrite(weapon_filename,
-                        adaptive_threshold(convert_to_gray(take_screenshot_mss(weapon_screenshot_area))))
-            cv2.imwrite(grip_filename,
-                        adaptive_threshold(convert_to_gray(take_screenshot_mss(grip_screenshot_area))))
-            cv2.imwrite(muzzle_filename,
-                        adaptive_threshold(convert_to_gray(take_screenshot_mss(muzzle_screenshot_area))))
-            cv2.imwrite(butt_filename,
-                        adaptive_threshold(convert_to_gray(take_screenshot_mss(butt_screenshot_area))))
-    except AttributeError:
-        print(AttributeError)
+            # cv2.imwrite(weapon_filename,
+            #             adaptive_threshold(convert_to_gray(take_screenshot_mss(weapon_screenshot_area))))
+            # cv2.imwrite(grip_filename,
+            #             adaptive_threshold(convert_to_gray(take_screenshot_mss(grip_screenshot_area))))
+            cv2.imwrite(muzzle_filename, take_screenshot_mss(muzzle_screenshot_area))
+            # cv2.imwrite(butt_filename,
+            #             adaptive_threshold(convert_to_gray(take_screenshot_mss(butt_screenshot_area))))
+    except AttributeError as e:
+        print(e)
 
 # =========================================>> 线程初始化 <<============================================
 

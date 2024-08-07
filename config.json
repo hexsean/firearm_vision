@@ -125,8 +125,9 @@
   },
   "firearms_accessories_list": {
     "muzzle_list": {
-      "xiaoyan": 1.162,
-      "buchang": 1
+      "xiaoyan": 1.08,
+      "buchang": 1,
+      "zhitui": 1.08
     },
     "grip_list": {
       "banjie": 0.818,
