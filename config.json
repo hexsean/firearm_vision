@@ -1,16 +1,16 @@
 {
   "lua_config_path": "C:/Users/Public/Downloads/pubg_config.lua",
-  "enable_realtime_configuration": true,
+  "enable_realtime_configuration": false,
   "screen_resolution": [
     3440,
     1440
   ],
-  "is_open_overlay": true,
+  "is_open_overlay": false,
   "overlay_position": [
     50,
     300
   ],
-  "is_open_screenshot_of_keystrokes": true,
+  "is_open_screenshot_of_keystrokes": false,
   "vertical_sensitivity_magnification": 1,
   "weapon_screenshot_area": {
     "left": 2740,
@@ -37,8 +37,8 @@
     "height": 22
   },
   "sight_screenshot_area": {
-    "left": 0,
-    "top": 0,
+    "left": 2606,
+    "top": 174,
     "width": 22,
     "height": 22
   },
@@ -134,9 +134,9 @@
   },
   "interval": {
     "firearm_monitor_interval": 0.2,
-    "accessories_monitor_interval": 0.1,
+    "accessories_monitor_interval": 0.05,
     "posture_monitor_interval": 0.05,
-    "coefficient_monitor_interval": 0.1,
+    "coefficient_monitor_interval": 1,
     "config_monitor_interval": 1
   },
   "firearms_accessories_list": {
@@ -159,9 +159,9 @@
     "sight_list": {
       "hongdian": 1,
       "quanxi": 1,
-      "two": 1,
-      "three": 1,
-      "four": 1
+      "two": 1.62,
+      "three": 5.8,
+      "four": 5.8
     }
   }
 }

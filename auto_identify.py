@@ -313,7 +313,7 @@ def monitor_posture():
         time.sleep(config.posture_monitor_interval)
 
 
-def monitor_coefficient(overlay_model):
+def monitor_coefficient(overlay_model, interval):
     while True:
         try:
             with open(config.lua_config_path, 'r', encoding='utf-8') as file:
@@ -322,14 +322,14 @@ def monitor_coefficient(overlay_model):
                 overlay_model.update_text8(lua_config)
         except Exception as e:
             print(e)
-        time.sleep(config.coefficient_monitor_interval)
+        time.sleep(interval)
 
 
 # 监控姿势主入口
 def monitor_posture_main():
     print("> 姿势监控中...")
     # 启动监控线程
-    monitor_thread = threading.Thread(target=monitor_posture, daemon=True)
+    monitor_thread = threading.Thread(target=monitor_posture)
     monitor_thread.start()
 
 
@@ -339,7 +339,7 @@ def monitor_firearms_main(overlay_model):
     # 加载模板
     firearms_templates = load_templates("firearms", config.firearm_list)
     # 启动监控线程
-    monitor_thread = threading.Thread(target=firearm_monitor_screen, daemon=True, args=(firearms_templates, overlay_model))
+    monitor_thread = threading.Thread(target=firearm_monitor_screen, args=(firearms_templates, overlay_model))
     monitor_thread.start()
 
 
@@ -352,7 +352,7 @@ def monitor_accessories_main(overlay_model):
     butt_templates = load_templates("butt", config.butt_list)
     sight_templates = load_templates("sight", config.sight_list)
     # 启动监控线程
-    monitor_thread = threading.Thread(target=accessories_monitor_screen, daemon=True,
+    monitor_thread = threading.Thread(target=accessories_monitor_screen,
                                       args=(grips_templates, muzzles_templates, butt_templates, sight_templates, overlay_model))
     monitor_thread.start()
 
@@ -360,7 +360,8 @@ def monitor_accessories_main(overlay_model):
 def monitor_coefficient_main(overlay_model):
     print("> 最终系数监控中...")
     # 启动监控线程
-    monitor_thread = threading.Thread(target=monitor_coefficient, daemon=True, args=(overlay_model,))
+    monitor_thread = threading.Thread(target=monitor_coefficient, daemon=True,
+                                      args=(overlay_model, config.coefficient_monitor_interval))
     monitor_thread.start()
 
 
