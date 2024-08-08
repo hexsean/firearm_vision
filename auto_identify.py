@@ -11,6 +11,8 @@ import os
 import json
 from pynput import keyboard
 import tkinter as tk
+
+from UserConfiguration import UserConfiguration
 from text_overlay import TextOverlay
 import base64
 import re
@@ -21,66 +23,13 @@ from cryptography.hazmat.primitives.asymmetric import padding
 # =========================================>> 加载动态配置 <<============================================
 
 
-def load_config():
+def load_configuration():
     with open('config.json', 'r') as f:
-        return json.load(f)
+        c = json.load(f)
+    return UserConfiguration(c)
 
 
-config = load_config()
-
-# 获取lua脚本读取的配置文件路径
-lua_config_path = config["lua_config_path"]
-# 是否开启监控
-is_open_overlay = config["is_open_overlay"]
-# 是否开启按键截图
-is_open_screenshot_of_keystrokes = config["is_open_screenshot_of_keystrokes"]
-# 获取武器截图区域(left, top, width, height)
-weapon_screenshot_area = config["weapon_screenshot_area"]
-# 获取屏幕高度(像素)
-screen_height = config["screen_resolution"][1]
-
-# 获取1号位武器配件=> 枪口 =>截图区域(left, top, width, height)
-muzzle_screenshot_area = config["muzzle_screenshot_area"]
-# 获取1号位武器配件=> 握把 =>截图区域(left, top, width, height)
-grip_screenshot_area = config["grip_screenshot_area"]
-# 获取1号位武器配件=> 枪托 =>截图区域(left, top, width, height)
-butt_screenshot_area = config["butt_screenshot_area"]
-# 获取1号位武器配件=> 瞄准镜 =>截图区域(left, top, width, height)
-sight_screenshot_area = config["sight_screenshot_area"]
-
-# 获取垂直灵敏度倍率
-vertical_sensitivity_magnification = config["vertical_sensitivity_magnification"]
-
-# 枪械列表
-firearm_list = list(config["firearms"].keys())
-
-# 获取武器识别置信度阈值(按武器名小写)
-weapon_recognition_confidence_threshold_list = {
-    weapon_name: data["recognition_confidence_threshold"]
-    for weapon_name, data in config["firearms"].items()
-}
-
-# 各枪械基础系数[基础系数, 站立系数, 蹲下系数, 趴下系数]
-firearm_coefficient_list = {
-    weapon_name: data["coefficient_list"]
-    for weapon_name, data in config["firearms"].items()
-}
-
-# 枪口列表(无, 步枪消焰, 步枪补偿)
-muzzle_list = list(config["firearms_accessories_list"]["muzzle_list"].keys())
-muzzle_coefficient_list = config["firearms_accessories_list"]["muzzle_list"]
-
-# 握把列表(无, 半截式握把, 轻型握把, 垂直握把, 拇指握把)
-grip_list = list(config["firearms_accessories_list"]["grip_list"].keys())
-grip_coefficient_list = config["firearms_accessories_list"]["grip_list"]
-
-# 枪托列表(无, 战术枪托, 重型枪托)
-butt_list = list(config["firearms_accessories_list"]["butt_list"].keys())
-butt_coefficient_list = config["firearms_accessories_list"]["butt_list"]
-
-# 瞄准镜列表(无, 红点, 全息, 二倍, 三倍, 四倍)
-sight_list = list(config["firearms_accessories_list"]["sight_list"].keys())
-sight_coefficient_list = config["firearms_accessories_list"]["sight_list"]
+config = load_configuration()
 
 # =========================================>> 初始化静态配置 <<============================================
 
@@ -105,16 +54,16 @@ def calculate_recoil_coefficient():
     # 分辨率系数(与fov相关, 暂不参与计算)
     screen_coefficient = 1
     # 垂直灵敏度系数
-    vertical_coefficient = 1 / vertical_sensitivity_magnification
+    vertical_coefficient = 1 / config.vertical_sensitivity_magnification
     # 默认为裸配, 默认弹道为补偿三角(战术枪托)
-    muzzle_coefficient = muzzle_coefficient_list.get(last_muzzle_name, 1.265)
-    grip_coefficient = grip_coefficient_list.get(last_grip_name, 1)
-    butt_coefficient = butt_coefficient_list.get(last_butt_name, 1)
-    sight_coefficient = sight_coefficient_list.get(last_sight_name, 1)
+    muzzle_coefficient = config.muzzle_coefficient_list.get(last_muzzle_name, 1.265)
+    grip_coefficient = config.grip_coefficient_list.get(last_grip_name, 1)
+    butt_coefficient = config.butt_coefficient_list.get(last_butt_name, 1)
+    sight_coefficient = config.sight_coefficient_list.get(last_sight_name, 1)
 
     # 基础枪械系数 * 姿势系数
-    if last_weapon_name in firearm_coefficient_list:
-        weapon_coefficients = firearm_coefficient_list[last_weapon_name]
+    if last_weapon_name in config.firearm_coefficient_list:
+        weapon_coefficients = config.firearm_coefficient_list[last_weapon_name]
         firearm_coefficient = weapon_coefficients[0] * weapon_coefficients[posture_state]
     else:
         firearm_coefficient = 1  # 如果键不存在，则使用默认值1
@@ -218,7 +167,7 @@ def update_weapon_and_coefficient():
     if update_last_weapon_name != last_weapon_name or update_coefficient != coefficient:
         update_last_weapon_name = last_weapon_name
         update_coefficient = coefficient
-        with open(lua_config_path, 'w', encoding='utf-8') as file:
+        with open(config.lua_config_path, 'w', encoding='utf-8') as file:
             file.write(f"GunName = '{update_last_weapon_name}'\n")
             file.write(f"RecoilCoefficient = {update_coefficient}\n")
 
@@ -232,7 +181,7 @@ def firearm_monitor_screen(templates, interval, overlay_model):
 
     while True:
         start_time = time.time()
-        screenshot = adaptive_threshold(convert_to_gray(take_screenshot_mss(weapon_screenshot_area)))
+        screenshot = adaptive_threshold(convert_to_gray(take_screenshot_mss(config.weapon_screenshot_area)))
         match_found = False
 
         max_val_list = {}
@@ -246,7 +195,7 @@ def firearm_monitor_screen(templates, interval, overlay_model):
                 if overlay_model is not None:
                     text_list.append(f"{name}相似度: {max_val}\n")
 
-                if max_val >= weapon_recognition_confidence_threshold_list.get(name):
+                if max_val >= config.weapon_recognition_confidence_threshold_list.get(name):
                     max_val_list[name] = max_val
 
             if len(max_val_list) > 0:
@@ -280,8 +229,28 @@ def firearm_monitor_screen(templates, interval, overlay_model):
         time.sleep(interval)
 
 
+def firearms_fittings_match(area, template_list):
+    max_val_list = {}
+    img = adaptive_threshold(convert_to_gray(take_screenshot_mss(area)))
+    for name, template in template_list.items():
+        max_val = match_image(img, template)
+        if max_val >= 0.65:
+            max_val_list[name] = max_val
+    return max_val_list
+
+
+def calculate_final_fittings(max_val_list):
+    if len(max_val_list) > 0:
+        last_name = max(max_val_list, key=max_val_list.get)
+        similarity = max_val_list.get(last_name)
+    else:
+        last_name = "None"
+        similarity = 0
+    return last_name, similarity
+
+
 # 监控当前武器配件
-def accessories_monitor_screen(grips_template_list, muzzles_template_list, butt_template_list, interval, overlay_model):
+def accessories_monitor_screen(grips_template_list, muzzles_template_list, butt_template_list, sight_template_list, interval, overlay_model):
     global last_muzzle_name
     global last_grip_name
     global last_butt_name
@@ -290,72 +259,38 @@ def accessories_monitor_screen(grips_template_list, muzzles_template_list, butt_
     while True:
         start_time = time.time()
         if is_open_backpack():
-            grip_max_val_list = {}
-            muzzles_max_val_list = {}
-            butt_max_val_list = {}
-            text_list = []
-
             # 循环枪口
-            muzzle_img = adaptive_threshold(convert_to_gray(take_screenshot_mss(muzzle_screenshot_area)))
-            for name, template in muzzles_template_list.items():
-                max_val = match_image(muzzle_img, template)
-                if max_val >= 0.65:
-                    muzzles_max_val_list[name] = max_val
-
+            muzzles_max_val_list = firearms_fittings_match(config.muzzle_screenshot_area, muzzles_template_list)
             # 循环握把
-            grip_img = adaptive_threshold(convert_to_gray(take_screenshot_mss(grip_screenshot_area)))
-            for name, template in grips_template_list.items():
-                max_val = match_image(grip_img, template)
-                if max_val >= 0.65:
-                    grip_max_val_list[name] = max_val
-
+            grip_max_val_list = firearms_fittings_match(config.grip_screenshot_area, grips_template_list)
             # 循环枪托
-            butt_img = adaptive_threshold(convert_to_gray(take_screenshot_mss(butt_screenshot_area)))
-            for name, template in butt_template_list.items():
-                max_val = match_image(butt_img, template)
-                if max_val >= 0.65:
-                    butt_max_val_list[name] = max_val
+            butt_max_val_list = firearms_fittings_match(config.butt_screenshot_area, butt_template_list)
+            # 循环瞄准镜
+            sight_max_val_list = firearms_fittings_match(config.sight_screenshot_area, sight_template_list)
 
-            if len(muzzles_max_val_list) > 0:
-                last_muzzle_name = max(muzzles_max_val_list, key=muzzles_max_val_list.get)
-                if overlay_model is not None:
-                    text_list.append(f"相似度: {muzzles_max_val_list.get(last_muzzle_name):.2f}, 当前使用枪口: {last_muzzle_name}\n")
-            else:
-                last_muzzle_name = "None"
-                if overlay_model is not None:
-                    text_list.append(f"当前使用枪口None")
-
-            if len(grip_max_val_list) > 0:
-                last_grip_name = max(grip_max_val_list, key=grip_max_val_list.get)
-                if overlay_model is not None:
-                    text_list.append(f"相似度: {grip_max_val_list.get(last_grip_name):.2f}, 当前使用握把: {last_grip_name}\n")
-            else:
-                last_grip_name = "None"
-                if overlay_model is not None:
-                    text_list.append(f"当前使用握把None")
-
-            if len(butt_max_val_list) > 0:
-                last_butt_name = max(butt_max_val_list, key=butt_max_val_list.get)
-                if overlay_model is not None:
-                    text_list.append(f"相似度: {butt_max_val_list.get(last_butt_name):.2f}, 当前使用枪托: {last_butt_name}\n")
-            else:
-                last_butt_name = "None"
-                if overlay_model is not None:
-                    text_list.append(f"当前使用枪托None")
-
-            last_sight_name = "None"
+            last_muzzle_name, muzzle_similarity = calculate_final_fittings(muzzles_max_val_list)
+            last_grip_name, grip_similarity = calculate_final_fittings(grip_max_val_list)
+            last_butt_name, butt_similarity = calculate_final_fittings(butt_max_val_list)
+            last_sight_name, sight_similarity = calculate_final_fittings(sight_max_val_list)
 
             update_weapon_and_coefficient()
 
-            if overlay_model is not None and len(text_list) > 0:
+            if overlay_model is not None:
+                overlay_model.update_text3(f"检测背包完毕 ===> 耗时: {(time.time() - start_time) * 1000:.2f} ms")
+                text_list = [f"当前使用枪口: {last_muzzle_name} 相似度: {muzzle_similarity:.2f}\n",
+                             f"当前使用握把: {last_grip_name} 相似度: {grip_similarity:.2f}\n",
+                             f"当前使用枪托: {last_butt_name} 相似度: {butt_similarity:.2f}\n",
+                             f"当前使用瞄具: {last_sight_name} 相似度: {sight_similarity:.2f}\n"]
                 overlay_model.update_text4(" ".join(text_list))
-
             print(f"检测背包完毕 ===> 耗时: {(time.time() - start_time) * 1000:.2f} ms")
-            overlay_model.update_text3(f"检测背包完毕 ===> 耗时: {(time.time() - start_time) * 1000:.2f} ms")
         else:
             if overlay_model is not None:
-                overlay_model.update_text3(f"未打开背包 当前枪口{last_muzzle_name}, 握把{last_grip_name}, 枪托{last_butt_name}, 瞄具{last_sight_name}, 耗时: {(time.time() - start_time) * 1000:.2f} ms")
-                overlay_model.update_text4("")
+                overlay_model.update_text3(f"未打开背包 ===> 耗时: {(time.time() - start_time) * 1000:.2f} ms")
+                text_list = [f"当前使用枪口: {last_muzzle_name} \n",
+                             f"当前使用握把: {last_grip_name} \n",
+                             f"当前使用枪托: {last_butt_name} \n",
+                             f"当前使用瞄具: {last_sight_name} \n"]
+                overlay_model.update_text4(" ".join(text_list))
 
         # 等待间隔时间
         time.sleep(interval)
@@ -386,7 +321,7 @@ def monitor_firearms(interval, overlay_model):
 def monitor_coefficient(interval, overlay_model):
     while True:
         try:
-            with open(lua_config_path, 'r', encoding='utf-8') as file:
+            with open(config.lua_config_path, 'r', encoding='utf-8') as file:
                 lua_config = file.read()
             if lua_config:
                 overlay_model.update_text8(lua_config)
@@ -397,7 +332,7 @@ def monitor_coefficient(interval, overlay_model):
 
 # 监控姿势主入口
 def monitor_posture_main(overlay_model):
-    print("姿势监控中...\n")
+    print("> 姿势监控中...")
     # 启动监控线程
     monitor_thread = threading.Thread(target=monitor_firearms, args=(0.05, overlay_model))
     monitor_thread.start()
@@ -405,9 +340,9 @@ def monitor_posture_main(overlay_model):
 
 # 监控枪械主入口
 def monitor_firearms_main(overlay_model):
-    print("枪械监控中...\n")
+    print("> 枪械监控中...")
     # 加载模板
-    firearms_templates = load_templates("firearms", firearm_list)
+    firearms_templates = load_templates("firearms", config.firearm_list)
     # 启动监控线程
     monitor_thread = threading.Thread(target=firearm_monitor_screen, args=(firearms_templates, 0.2, overlay_model))
     monitor_thread.start()
@@ -415,19 +350,20 @@ def monitor_firearms_main(overlay_model):
 
 # 监控配件主入口
 def monitor_accessories_main(overlay_model):
-    print("配件监控中...\n")
+    print("> 配件监控中...")
     # 加载模板
-    grips_templates = load_templates("grips", grip_list)
-    muzzles_templates = load_templates("muzzles", muzzle_list)
-    butt_templates = load_templates("butt", butt_list)
+    grips_templates = load_templates("grips", config.grip_list)
+    muzzles_templates = load_templates("muzzles", config.muzzle_list)
+    butt_templates = load_templates("butt", config.butt_list)
+    sight_templates = load_templates("sight", config.sight_list)
     # 启动监控线程
     monitor_thread = threading.Thread(target=accessories_monitor_screen,
-                                      args=(grips_templates, muzzles_templates, butt_templates, 0.1, overlay_model))
+                                      args=(grips_templates, muzzles_templates, butt_templates, sight_templates, 0.1, overlay_model))
     monitor_thread.start()
 
 
 def monitor_coefficient_main(overlay_model):
-    print("最终系数监控中...\n")
+    print("> 最终系数监控中...")
     # 启动监控线程
     monitor_thread = threading.Thread(target=monitor_coefficient, args=(0.1, overlay_model))
     monitor_thread.start()
@@ -437,24 +373,28 @@ def monitor_coefficient_main(overlay_model):
 def on_press(key):
     try:
         char = key.char.lower()
-        if is_open_screenshot_of_keystrokes and char == 'k':
+        if config.is_open_screenshot_of_keystrokes and char == 'k':
             print("正在截取屏幕...")
             dir_name = "screenshots"
             if not os.path.exists(dir_name):
                 os.makedirs(dir_name)
             # 保存截图用于调试
             # weapon_filename = os.path.join(dir_name, f"weapon_ad_{datetime.now().strftime('%Y%m%d_%H%M%S%f')}.png")
-            # grip_filename = os.path.join(dir_name, f"grip_ad_{datetime.now().strftime('%Y%m%d_%H%M%S%f')}.png")
-            muzzle_filename = os.path.join(dir_name, f"muzzle_ad_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S%f')}.png")
-            # butt_filename = os.path.join(dir_name, f"butt_ad_{datetime.now().strftime('%Y%m%d_%H%M%S%f')}.png")
+
+            datestr = datetime.datetime.now().strftime('%Y%m%d_%H%M%S%f')
+            muzzle_filename = os.path.join(dir_name, f"muzzle_ad_{datestr}.png")
+            grip_filename = os.path.join(dir_name, f"grip_ad_{datestr}.png")
+            butt_filename = os.path.join(dir_name, f"butt_ad_{datestr}.png")
+            sight_filename = os.path.join(dir_name, f"sight_ad_{datestr}.png")
 
             # cv2.imwrite(weapon_filename,
             #             adaptive_threshold(convert_to_gray(take_screenshot_mss(weapon_screenshot_area))))
-            # cv2.imwrite(grip_filename,
-            #             adaptive_threshold(convert_to_gray(take_screenshot_mss(grip_screenshot_area))))
-            cv2.imwrite(muzzle_filename, take_screenshot_mss(muzzle_screenshot_area))
-            # cv2.imwrite(butt_filename,
-            #             adaptive_threshold(convert_to_gray(take_screenshot_mss(butt_screenshot_area))))
+
+            cv2.imwrite(muzzle_filename, take_screenshot_mss(config.muzzle_screenshot_area))
+            cv2.imwrite(grip_filename, take_screenshot_mss(config.grip_screenshot_area))
+            cv2.imwrite(butt_filename, take_screenshot_mss(config.butt_screenshot_area))
+            cv2.imwrite(sight_filename, take_screenshot_mss(config.sight_screenshot_area))
+
     except AttributeError as e:
         print(e)
 
@@ -495,44 +435,12 @@ def decrypt_message(ciphertext_str, private_pem_str):
     return plaintext_str
 
 
-privateKey = """
------BEGIN PRIVATE KEY-----
-MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDVLOXv9jUG35lf
-x7C0hI2CwcJvZQUbwowPdKHpyoOceCP23fZrntCJV2aNXnuDtmfCmirgLI3N814L
-3m/IN3pbCOY8SVbKXWpeWTUHKQgluQqQREkDU6InflKkiMF2/rJWDY2m5tkhgYM4
-0dzk25U43xEABZy1KnWCfQQQypAtpCQOD4Mb96UueY5idhlwLfkoDq0IIIRlKSD+
-Gzs9iY0HXMV+V86hqz/cRgy6gdx2hyMyHjcWg5O/9n+iITSo138UxCHDUvrxR8Q0
-fJ1vJwDEj1DdqIHx7CMa0PRexa6AvEr/LTlcGOKBnPijw5Gbgw88wAgurGC0I6XS
-AHl+MJZDAgMBAAECggEAB/duE7omlX5XW9TOyJLoO5nkcMechG2QULw3QtFD0DNN
-229vF+rZozr7b6QMx0l9S4X5vTfyXV8kxW/Hdfrbco8najBZcyWWOza9PGpu+K3s
-yaMWUW6s3Cn536vmraeWCuY7GXYoviT6E5kFgXNSpSCc9jG/f1EPZCl/ieXFXpc2
-xOaQeLx+v3M+vY8YgCpdJuO6vK/V3efVUhWUncz41ObunvUhGXx9tZQv4Qzfalz1
-lHQpd6iRM7PIn/grT369nRnsYvKlEx/hIiqlyLpu3HxrB80ebVevM0aOoxz93+9M
-JaTs8v7unPGQ/s5vqe9jCNZaXiE/ZUHAIa24okZjrQKBgQD2T8P38HnhwLL2yyZl
-JkgAzfqKzmP/+ocmvQkyHuLspWxiP/vzq+Zgmk2jBOCCXJosM5mtROsfqVjZeToG
-2XYnTzvbck67HEn4fjGlBGWCBTXPcc77Yp6pnkAZ+AWBfTqUdHxCjbvmcxc6rVAT
-g5op6RcNWEPEFnvyy9snvgr71QKBgQDdj3e8gl9q+KNvLXqobr2AyIExUh45tT4v
-OOkO4YvsgfLOiHDtukjd/v90kp9wce6A+gzUicznqktRjg2HJQiN/AnVyn08LigD
-srEzigDuwTyaQgqYBQECgY5e/cs0WwdXFNTS7WKDV8sZ2pFEmbmVdqK0TVivueEL
-CrDLDXnNtwKBgQDUAGPUDA9b19gxwzkQ5poi1ydGQc6gjKm3Fg3MLflzZg6boibh
-3Js1mpooLhJvIfUxBljHYgJeBgyLYmQncRTZUMFcaE6LjhW85CEmv1n/RyzBmFtm
-08NsiuDxeSCEC51YGcq6HfQUrgrYXkQGB8exOwa0Xbw2EoQsvnmrA0/A4QKBgQDE
-sEyXqRWUHU7ZsAIn7MeGwHkQk9oJWQDvYxJjB4/0Uhh/iVjXcnylt26IynGInVwi
-W9lwBTVGpENhDz6rLxE9GvaQOMac2kzjm4r8OhNB4YIvX1mQQ0D2PJVrdtsii30k
-rXWSGvNNrm67cPFteRrruPoQHmoQ9m72InN4j2oGWQKBgQDRgrT4zH2WzOeP4Gcg
-7IlO4QmXLP2GQ4082YsiHw6jQV9xV8Ae6miJbKbLpWpNy6/pbS+/7kAv3cP8vjX3
-SGcY6bTvTalstJfiGi2j5arCFKnt1KEyHH98UCu6reR96WSZe+z1+fksqEg/fGC5
-anPr6Cll/DsAcaY61iX+B1Rxsg==
------END PRIVATE KEY-----
-"""
-
-
 def verify_activation_code():
     try:
         with open('激活码.txt', 'r', encoding='utf-8') as file:
             activation_code = file.read()
         if activation_code:
-            plaintext_str = decrypt_message(activation_code, privateKey)
+            plaintext_str = decrypt_message(activation_code, config.private_key)
             is_succeed = False
             if plaintext_str.startswith("expiration_"):
                 match = re.search(r"expiration_(\d+)", plaintext_str)
@@ -542,47 +450,63 @@ def verify_activation_code():
                     date = datetime.datetime.fromtimestamp(timestamp)
                     if date:
                         if datetime.datetime.now() > date:
-                            print("===>  激活码已过期,请联系客服获取最新激活码")
+                            print("> 激活码已过期,请联系客服获取最新激活码")
                             exit_application()
                         else:
                             # 格式化输出日期和时间
                             is_succeed = True
                             formatted_date = date.strftime("%Y-%m-%d %H:%M:%S")
-                            print("===>  激活成功! 有效期至:" + formatted_date)
+                            print("> 激活成功! 有效期至:" + formatted_date)
 
             if not is_succeed:
-                print("===>  请输入有效的激活码")
+                print("> 请输入有效的激活码")
                 exit_application()
         else:
-            print("===>  请输入激活码")
+            print("> 请输入激活码")
             exit_application()
 
     except Exception as e:
-        print("===>  激活码无效")
+        print("> 激活码无效")
         exit_application()
 
 
 def exit_application():
     for i in range(3, 0, -1):  # 倒计时 3 秒
-        print(f"程序将在 {i} 秒后退出...")
+        print(f"> 程序将在 {i} 秒后退出...")
         time.sleep(1)  # 暂停 1 秒
     sys.exit()
 
 
+def realtime_configuration():
+    global config
+    while True:
+        config = load_configuration()
+        time.sleep(1)
+
+
+def realtime_configuration_main():
+    threading.Thread(target=realtime_configuration).start()
+
+
 if __name__ == "__main__":
     print("Starting the application...")
-    # 验证激活码
+    print("> 验证程序中... ")
+    print("> ")
     verify_activation_code()
+    print("> ")
+    # 验证激活码
+    print("> 当前程序运行中,请保持窗口开启 ")
+    print("> ")
     # 设置按键监听器
-    if is_open_screenshot_of_keystrokes:
+    if config.is_open_screenshot_of_keystrokes:
         keyboard.Listener(on_press=on_press).start()
-    print("程序运行中,请保持窗口开启 =====> \n")
     overlay = None
-    if is_open_overlay:
+    if config.is_open_overlay:
         # 创建监控窗口
-        overlay = TextOverlay(tk.Tk(), config["overlay_position"][0], config["overlay_position"][1])
+        overlay = TextOverlay(tk.Tk(), config.overlay_position[0], config.overlay_position[1])
         monitor_coefficient_main(overlay)
-
+    if config.enable_realtime_configuration:
+        realtime_configuration_main()
     # 重置枪械, 姿势, 和配件
     reset_all()
 
@@ -592,5 +516,5 @@ if __name__ == "__main__":
     monitor_firearms_main(overlay)
     # 启动配件监控线程
     monitor_accessories_main(overlay)
-    if is_open_overlay:
+    if config.is_open_overlay:
         overlay.root.mainloop()
