@@ -124,7 +124,23 @@
       "coefficient_list": [1, 1, 1, 1]
     }
   },
+  "index": {
+    "bullet": [1670, 1336],
+    "backpack": [2238, 144],
+    "energy_drink": [1916, 1330, 6],
+    "antivirus_backpack": [1445, 1397, 4],
+    "posture_2": [1415, 1333],
+    "posture_3": [1420, 1351]
+  },
+  "interval": {
+    "firearm_monitor_interval": 0.2,
+    "accessories_monitor_interval": 0.1,
+    "posture_monitor_interval": 0.05,
+    "coefficient_monitor_interval": 0.1,
+    "config_monitor_interval": 1
+  },
   "firearms_accessories_list": {
+    "def_muzzle": 1.265,
     "muzzle_list": {
       "xiaoyan": 1.08,
       "buchang": 1,

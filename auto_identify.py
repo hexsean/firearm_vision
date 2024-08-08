@@ -12,7 +12,7 @@ import json
 from pynput import keyboard
 import tkinter as tk
 
-from UserConfiguration import UserConfiguration
+from user_configuration import UserConfiguration
 from text_overlay import TextOverlay
 import base64
 import re
@@ -32,7 +32,8 @@ def load_configuration():
 config = load_configuration()
 
 # =========================================>> 初始化静态配置 <<============================================
-
+update_last_weapon_name = None
+update_coefficient = 1
 # 当前佩戴的武器名称
 last_weapon_name = 'None'
 # 当前枪口配件名称
@@ -56,7 +57,7 @@ def calculate_recoil_coefficient():
     # 垂直灵敏度系数
     vertical_coefficient = 1 / config.vertical_sensitivity_magnification
     # 默认为裸配, 默认弹道为补偿三角(战术枪托)
-    muzzle_coefficient = config.muzzle_coefficient_list.get(last_muzzle_name, 1.265)
+    muzzle_coefficient = config.muzzle_coefficient_list.get(last_muzzle_name, config.def_muzzle)
     grip_coefficient = config.grip_coefficient_list.get(last_grip_name, 1)
     butt_coefficient = config.butt_coefficient_list.get(last_butt_name, 1)
     sight_coefficient = config.sight_coefficient_list.get(last_sight_name, 1)
@@ -126,37 +127,33 @@ def get_pixel_color(x, y):
 # 判断是否佩戴全自动或半自动武器
 def is_wear_fully_automatic_rifle():
     # y = 1341
-    y = 1336
+    y = config.bullet_index[1]
 
-    # 判断是否打能量
-    color1 = get_pixel_color(1916, 1330)
+    # 判断是否打能量饮料
+    color1 = get_pixel_color(config.energy_drink_index[0], config.energy_drink_index[1])
     r, g, b = color1
     # 加速图标亮起, 认为此时打了能量, 上移能量条的高度
     if r > 200 and g > 200 and b > 200:
-        y = y - 6
+        y = y - config.energy_drink_index[2]
 
     # 判断是否防毒背包
-    color1 = get_pixel_color(1445, 1397)
+    color1 = get_pixel_color(config.antivirus_backpack_index[0], config.antivirus_backpack_index[1])
     r, g, b = color1
     # 有防毒条认为佩戴防毒背包, 上移防毒条的高度
     if 5 <= r <= 9 and 158 <= g <= 162 and 245 <= b <= 249:
-        y = y - 4
+        y = y - config.antivirus_backpack_index[2]
 
     # 根据第2颗子弹是否亮起判断是否佩戴全自动或半自动武器
-    color = get_pixel_color(1670, y)
+    color = get_pixel_color(config.bullet_index[0], y)
     r, g, b = color
     return r > 200 and g > 200 and b > 200
 
 
 # 判断是否打开背包
 def is_open_backpack():
-    color = get_pixel_color(2238, 144)
+    color = get_pixel_color(config.backpack_index[0], config.backpack_index[1])
     r, g, b = color
     return r > 250 and g > 250 and b > 250
-
-
-update_last_weapon_name = None
-update_coefficient = 1
 
 
 # 更新武器和后坐力系数
@@ -176,7 +173,7 @@ def update_weapon_and_coefficient():
 
 
 # 监控当前武器
-def firearm_monitor_screen(templates, interval, overlay_model):
+def firearm_monitor_screen(templates, overlay_model):
     global last_weapon_name
 
     while True:
@@ -226,7 +223,7 @@ def firearm_monitor_screen(templates, interval, overlay_model):
                 overlay_model.update_text2(f"耗时: {(time.time() - start_time) * 1000:.2f} ms, 未佩枪")
 
         # 等待间隔时间
-        time.sleep(interval)
+        time.sleep(config.firearm_monitor_interval)
 
 
 def firearms_fittings_match(area, template_list):
@@ -250,7 +247,7 @@ def calculate_final_fittings(max_val_list):
 
 
 # 监控当前武器配件
-def accessories_monitor_screen(grips_template_list, muzzles_template_list, butt_template_list, sight_template_list, interval, overlay_model):
+def accessories_monitor_screen(grips_template_list, muzzles_template_list, butt_template_list, sight_template_list, overlay_model):
     global last_muzzle_name
     global last_grip_name
     global last_butt_name
@@ -293,20 +290,18 @@ def accessories_monitor_screen(grips_template_list, muzzles_template_list, butt_
                 overlay_model.update_text4(" ".join(text_list))
 
         # 等待间隔时间
-        time.sleep(interval)
+        time.sleep(config.accessories_monitor_interval)
 
 
-def monitor_firearms(interval, overlay_model):
+def monitor_posture():
     global posture_state
     while True:
-        posture = None
-        color1 = get_pixel_color(1415, 1333)
+        color1 = get_pixel_color(config.posture_2_index[0], config.posture_2_index[1])
         r, g, b = color1
-        # 加速图标亮起, 认为此时打了能量, 上移能量条的高度
         if r > 200 and g > 200 and b > 200:
             posture = 2
         else:
-            color2 = get_pixel_color(1420, 1351)
+            color2 = get_pixel_color(config.posture_3_index[0], config.posture_3_index[1])
             r2, g2, b2 = color2
             if r2 > 200 and g2 > 200 and b2 > 200:
                 posture = 3
@@ -315,10 +310,10 @@ def monitor_firearms(interval, overlay_model):
         if posture_state != posture:
             posture_state = posture
             update_weapon_and_coefficient()
-        time.sleep(interval)
+        time.sleep(config.posture_monitor_interval)
 
 
-def monitor_coefficient(interval, overlay_model):
+def monitor_coefficient(overlay_model):
     while True:
         try:
             with open(config.lua_config_path, 'r', encoding='utf-8') as file:
@@ -327,14 +322,14 @@ def monitor_coefficient(interval, overlay_model):
                 overlay_model.update_text8(lua_config)
         except Exception as e:
             print(e)
-        time.sleep(interval)
+        time.sleep(config.coefficient_monitor_interval)
 
 
 # 监控姿势主入口
-def monitor_posture_main(overlay_model):
+def monitor_posture_main():
     print("> 姿势监控中...")
     # 启动监控线程
-    monitor_thread = threading.Thread(target=monitor_firearms, args=(0.05, overlay_model))
+    monitor_thread = threading.Thread(target=monitor_posture, daemon=True)
     monitor_thread.start()
 
 
@@ -344,7 +339,7 @@ def monitor_firearms_main(overlay_model):
     # 加载模板
     firearms_templates = load_templates("firearms", config.firearm_list)
     # 启动监控线程
-    monitor_thread = threading.Thread(target=firearm_monitor_screen, args=(firearms_templates, 0.2, overlay_model))
+    monitor_thread = threading.Thread(target=firearm_monitor_screen, daemon=True, args=(firearms_templates, overlay_model))
     monitor_thread.start()
 
 
@@ -357,15 +352,15 @@ def monitor_accessories_main(overlay_model):
     butt_templates = load_templates("butt", config.butt_list)
     sight_templates = load_templates("sight", config.sight_list)
     # 启动监控线程
-    monitor_thread = threading.Thread(target=accessories_monitor_screen,
-                                      args=(grips_templates, muzzles_templates, butt_templates, sight_templates, 0.1, overlay_model))
+    monitor_thread = threading.Thread(target=accessories_monitor_screen, daemon=True,
+                                      args=(grips_templates, muzzles_templates, butt_templates, sight_templates, overlay_model))
     monitor_thread.start()
 
 
 def monitor_coefficient_main(overlay_model):
     print("> 最终系数监控中...")
     # 启动监控线程
-    monitor_thread = threading.Thread(target=monitor_coefficient, args=(0.1, overlay_model))
+    monitor_thread = threading.Thread(target=monitor_coefficient, daemon=True, args=(overlay_model,))
     monitor_thread.start()
 
 
@@ -374,27 +369,30 @@ def on_press(key):
     try:
         char = key.char.lower()
         if config.is_open_screenshot_of_keystrokes and char == 'k':
-            print("正在截取屏幕...")
+            print("> 正在截取屏幕...")
             dir_name = "screenshots"
             if not os.path.exists(dir_name):
                 os.makedirs(dir_name)
-            # 保存截图用于调试
-            # weapon_filename = os.path.join(dir_name, f"weapon_ad_{datetime.now().strftime('%Y%m%d_%H%M%S%f')}.png")
 
             datestr = datetime.datetime.now().strftime('%Y%m%d_%H%M%S%f')
+            weapon_filename = os.path.join(dir_name, f"weapon_ad_{datestr}.png")
             muzzle_filename = os.path.join(dir_name, f"muzzle_ad_{datestr}.png")
             grip_filename = os.path.join(dir_name, f"grip_ad_{datestr}.png")
             butt_filename = os.path.join(dir_name, f"butt_ad_{datestr}.png")
             sight_filename = os.path.join(dir_name, f"sight_ad_{datestr}.png")
 
-            # cv2.imwrite(weapon_filename,
-            #             adaptive_threshold(convert_to_gray(take_screenshot_mss(weapon_screenshot_area))))
-
+            cv2.imwrite(weapon_filename, take_screenshot_mss(config.weapon_screenshot_area))
             cv2.imwrite(muzzle_filename, take_screenshot_mss(config.muzzle_screenshot_area))
             cv2.imwrite(grip_filename, take_screenshot_mss(config.grip_screenshot_area))
             cv2.imwrite(butt_filename, take_screenshot_mss(config.butt_screenshot_area))
             cv2.imwrite(sight_filename, take_screenshot_mss(config.sight_screenshot_area))
 
+            print("> 截图已保存:")
+            print(f"> 右下角武器区域截图,请确保截图范围包括两把武器: {weapon_filename}")
+            print(f"> 打开背包的枪口截图: {muzzle_filename}")
+            print(f"> 打开背包的握把截图: {grip_filename}")
+            print(f"> 打开背包的枪托截图: {butt_filename}")
+            print(f"> 打开背包的瞄具截图: {sight_filename}")
     except AttributeError as e:
         print(e)
 
@@ -481,11 +479,11 @@ def realtime_configuration():
     global config
     while True:
         config = load_configuration()
-        time.sleep(1)
+        time.sleep(config.config_monitor_interval)
 
 
 def realtime_configuration_main():
-    threading.Thread(target=realtime_configuration).start()
+    threading.Thread(target=realtime_configuration, daemon=True,).start()
 
 
 if __name__ == "__main__":
@@ -511,10 +509,14 @@ if __name__ == "__main__":
     reset_all()
 
     # 启动监控姿势
-    monitor_posture_main(overlay)
+    monitor_posture_main()
     # 启动枪械监控线程
     monitor_firearms_main(overlay)
     # 启动配件监控线程
     monitor_accessories_main(overlay)
     if config.is_open_overlay:
-        overlay.root.mainloop()
+        try:
+            overlay.root.mainloop()
+        except KeyboardInterrupt:
+            print("正在退出程序...")
+            overlay.root.destroy()

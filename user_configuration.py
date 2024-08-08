@@ -35,6 +35,7 @@ class UserConfiguration:
             for weapon_name, data in config["firearms"].items()
         }
         # 枪口列表(无, 步枪消焰, 步枪补偿)
+        self.def_muzzle = config["firearms_accessories_list"]["def_muzzle"]
         self.muzzle_list = list(config["firearms_accessories_list"]["muzzle_list"].keys())
         self.muzzle_coefficient_list = config["firearms_accessories_list"]["muzzle_list"]
         # 握把列表(无, 半截式握把, 轻型握把, 垂直握把, 拇指握把)
@@ -45,8 +46,33 @@ class UserConfiguration:
         self.butt_coefficient_list = config["firearms_accessories_list"]["butt_list"]
         # 瞄准镜列表(无, 红点, 全息, 二倍, 三倍, 四倍)
         self.sight_list = list(config["firearms_accessories_list"]["sight_list"].keys())
+        # 瞄具系数
         self.sight_coefficient_list = config["firearms_accessories_list"]["sight_list"]
+        # 监控位置
         self.overlay_position = config["overlay_position"]
+        # 背包开启坐标
+        self.backpack_index = config["index"]["backpack"]
+        # 饮料坐标
+        self.energy_drink_index = config["index"]["energy_drink"]
+        # 子弹坐标
+        self.bullet_index = config["index"]["bullet"]
+        # 毒包坐标
+        self.antivirus_backpack_index = config["index"]["antivirus_backpack"]
+        # 蹲姿坐标
+        self.posture_2_index = config["index"]["posture_2"]
+        # 趴姿坐标
+        self.posture_3_index = config["index"]["posture_3"]
+        # 枪械监控间隔
+        self.firearm_monitor_interval = config["interval"]["firearm_monitor_interval"]
+        # 配件监控间隔
+        self.accessories_monitor_interval = config["interval"]["accessories_monitor_interval"]
+        # 姿势监控间隔
+        self.posture_monitor_interval = config["interval"]["posture_monitor_interval"]
+        # 系数监控间隔
+        self.coefficient_monitor_interval = config["interval"]["coefficient_monitor_interval"]
+        # 配置监控间隔
+        self.config_monitor_interval = config["interval"]["config_monitor_interval"]
+        # 解密私钥
         self.private_key = """
 -----BEGIN PRIVATE KEY-----
 MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDVLOXv9jUG35lf
