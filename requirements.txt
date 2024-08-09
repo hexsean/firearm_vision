@@ -5,3 +5,4 @@ pyautogui
 pynput==1.6.8
 mss
 cryptography
+dxcam
