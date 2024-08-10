@@ -20,6 +20,16 @@ class UserConfiguration:
         self.butt_screenshot_area = config["butt_screenshot_area"]
         # 获取1号位武器配件=> 瞄准镜 =>截图区域(left, top, width, height)
         self.sight_screenshot_area = config["sight_screenshot_area"]
+
+        # 获取2号位武器配件=> 枪口 =>截图区域(left, top, width, height)
+        self.muzzle_screenshot_area2 = config["muzzle_screenshot_area2"]
+        # 获取2号位武器配件=> 握把 =>截图区域(left, top, width, height)
+        self.grip_screenshot_area2 = config["grip_screenshot_area2"]
+        # 获取2号位武器配件=> 枪托 =>截图区域(left, top, width, height)
+        self.butt_screenshot_area2 = config["butt_screenshot_area2"]
+        # 获取2号位武器配件=> 瞄准镜 =>截图区域(left, top, width, height)
+        self.sight_screenshot_area2 = config["sight_screenshot_area2"]
+
         # 获取垂直灵敏度倍率
         self.vertical_sensitivity_magnification = config["vertical_sensitivity_magnification"]
         # 枪械列表

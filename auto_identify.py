@@ -39,6 +39,9 @@ update_last_weapon_name = None
 update_coefficient = 1
 # 当前佩戴的武器名称
 last_weapon_name = 'None'
+last_weapon_no = 1
+
+# 1号位
 # 当前枪口配件名称
 last_muzzle_name = 'None'
 # 当前握把配件名称
@@ -47,11 +50,21 @@ last_grip_name = 'None'
 last_butt_name = 'None'
 # 当前瞄准镜配件名称
 last_sight_name = 'None'
+
+# 2号位
+# 当前枪口配件名称
+last_muzzle_name2 = 'None'
+# 当前握把配件名称
+last_grip_name2 = 'None'
+# 当前枪托配件名称
+last_butt_name2 = 'None'
+# 当前瞄准镜配件名称
+last_sight_name2 = 'None'
+
 # 姿势状态: 1-站立, 2-蹲下, 3-趴下
 posture_state = 1
 
-camera = dxcam.create(output_color="BGR")
-last_frame = camera.grab()
+last_frame = None
 # =========================================>> tool函数初始化 <<============================================
 
 
@@ -62,10 +75,16 @@ def calculate_recoil_coefficient():
     # 垂直灵敏度系数
     vertical_coefficient = 1 / config.vertical_sensitivity_magnification
     # 默认为裸配, 默认弹道为补偿三角(战术枪托)
-    muzzle_coefficient = config.muzzle_coefficient_list.get(last_muzzle_name, config.def_muzzle)
-    grip_coefficient = config.grip_coefficient_list.get(last_grip_name, 1)
-    butt_coefficient = config.butt_coefficient_list.get(last_butt_name, 1)
-    sight_coefficient = config.sight_coefficient_list.get(last_sight_name, 1)
+    if last_weapon_no == 1:
+        muzzle_coefficient = config.muzzle_coefficient_list.get(last_muzzle_name, config.def_muzzle)
+        grip_coefficient = config.grip_coefficient_list.get(last_grip_name, 1)
+        butt_coefficient = config.butt_coefficient_list.get(last_butt_name, 1)
+        sight_coefficient = config.sight_coefficient_list.get(last_sight_name, 1)
+    else:
+        muzzle_coefficient = config.muzzle_coefficient_list.get(last_muzzle_name2, config.def_muzzle)
+        grip_coefficient = config.grip_coefficient_list.get(last_grip_name2, 1)
+        butt_coefficient = config.butt_coefficient_list.get(last_butt_name2, 1)
+        sight_coefficient = config.sight_coefficient_list.get(last_sight_name2, 1)
 
     # 基础枪械系数 * 姿势系数
     if last_weapon_name in config.firearm_coefficient_list:
@@ -88,39 +107,31 @@ def load_templates(path: str, name_list: List[str]):
     return templates
 
 
-# 使用mss截取指定区域的屏幕
+# 使用mss截取指定区域的屏幕bgr
 def take_screenshot_mss(region):
     with mss.mss() as sct:
         return sct.grab(region)
 
-last_fps = None
-# 使用dxgi截取指定区域的屏幕-灰度
+
+# 使用dxgi截取指定区域的屏幕bgr
 def take_screenshot_dxgi(region):
-    global last_fps
+    global last_frame
     try:
-        left = region['left']
-        top = region['top']
-        # left = 100
-        # top = 100
-        right = left + region['width']
-        bottom = top + region['height']
-        img = camera.grab((left, top, right, bottom))
-        if img is not None:
-            last_fps = img
-            return img
-        else:
-            if last_fps is None:
-                last_fps = image2bgr(take_screenshot_mss(region))
-            return last_fps
+        # start_time = time.perf_counter()  # 开始计时
+        result = last_frame[region['top']:region['top']+region['height'], region['left']:region['left']+region['width']]
+        # end_time = time.perf_counter()  # 结束计时
+        # elapsed_time = (end_time - start_time) * 1000  # 计算耗时（毫秒）
+        # print(f"切片耗时: {elapsed_time:.2f} ms")
+        return result
     except Exception as e:
-        print(f"Error take_screenshot_dxgi capturing screen: {e}")
-        if last_fps is None:
-            last_fps = image2bgr(take_screenshot_mss(region))
-        return last_fps
+        print(f"获取范围截图出现异常: {e}")
+        return image2bgr(take_screenshot_mss(region))
+
 
 def image2gray(screenshot):
     # 先转NumPy数组再转灰度
     return cv2.cvtColor(np.array(screenshot), cv2.COLOR_BGRA2GRAY)
+
 
 def image2bgr(screenshot):
     # 先转NumPy数组再转BGR
@@ -137,21 +148,17 @@ def adaptive_threshold(image, block_size=7, c=-10):
 def match_image(screenshot, template):
     result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-    return max_val
+    return max_val, max_loc
 
-last_rgb = 0, 0, 0
+
 # 获取指定坐标的颜色信息
 def get_pixel_color(x, y):
-    global last_rgb
+    global last_frame
     try:
-        frame = camera.grab()  # 获取屏幕截图
-        if frame is not None:
-            b, g, r = frame[y, x, :]
-            last_rgb = (r, g, b)
-            print(f"{r}, {g}, {b}")
-        return last_rgb
+        b, g, r = last_frame[y, x, :]
+        return int(r), int(g), int(b)
     except Exception as e:
-        print(f"Error get_pixel_color capturing screen: {e}")
+        print(f"获取坐标颜色出现异常, 坐标地址x:{x}, y:{y}, e: {e}")
         with mss.mss() as sct:
             # 定义截取区域为一个1x1的区域
             monitor = {"top": y, "left": x, "width": 1, "height": 1}
@@ -160,6 +167,7 @@ def get_pixel_color(x, y):
             # 获取RGB颜色值
             color = img.pixel(0, 0)
             return color
+
 
 # 判断是否佩戴全自动或半自动武器
 def is_wear_fully_automatic_rifle():
@@ -211,7 +219,7 @@ def update_weapon_and_coefficient():
 
 # 监控当前武器
 def firearm_monitor(templates, overlay_model):
-    global last_weapon_name
+    global last_weapon_name, last_weapon_no
 
     while True:
         start_time = time.time()
@@ -223,27 +231,34 @@ def firearm_monitor(templates, overlay_model):
 
         if is_wear_fully_automatic_rifle():
             for name, template in templates.items():
-                max_val = match_image(screenshot, template)
+                max_val, max_loc = match_image(screenshot, template)
 
                 # 常用队列统计相似度
                 if overlay_model is not None:
                     text_list.append(f"{name}相似度: {max_val}\n")
 
                 if max_val >= config.weapon_recognition_confidence_threshold_list.get(name):
-                    max_val_list[name] = max_val
+                    max_val_list[name] = max_val, max_loc
 
             if len(max_val_list) > 0:
-                name = max(max_val_list, key=max_val_list.get)
+                name = max(max_val_list, key=lambda x: max_val_list[x][0])
+
+                # 判断图片位置
+                if max_val_list[name][1][1] > 75:
+                    no = 1
+                else:
+                    no = 2
+
                 # 识别结果不同时更新
-                if last_weapon_name != name:
+                if last_weapon_name != name or last_weapon_no != no:
                     last_weapon_name = name
+                    last_weapon_no = no
                     update_weapon_and_coefficient()
-                    print(
-                        f"耗时: {(time.time() - start_time) * 1000:.2f} ms, 更新时相似度: {max_val_list.get(name)} 当前使用武器: {name}")
+                    str_msg = f"耗时: {(time.time() - start_time) * 1000:.2f} ms, 更新时相似度: {max_val_list.get(name)} 当前{no}号位使用武器: {name}"
+                    print(str_msg)
 
                     if overlay_model is not None:
-                        overlay_model.update_text2(
-                            f"耗时: {(time.time() - start_time) * 1000:.2f} ms, 相似度: {max_val_list.get(name):.2f}, 当前使用武器: {name}")
+                        overlay_model.update_text2(str_msg)
 
                 match_found = True
 
@@ -265,9 +280,9 @@ def firearm_monitor(templates, overlay_model):
 
 def firearms_fittings_match(screenshot, template_list):
     max_val_list = {}
-    img = adaptive_threshold(screenshot, 11, 2)
+    img = adaptive_threshold(screenshot)
     for name, template in template_list.items():
-        max_val = match_image(img, template)
+        max_val, max_loc = match_image(img, template)
         if max_val >= 0.65:
             max_val_list[name] = max_val
     return max_val_list
@@ -284,19 +299,28 @@ def calculate_final_fittings(max_val_list):
 
 
 # 监控当前武器配件
-def accessories_monitor(grips_template_list, muzzles_template_list, butt_template_list, sight_template_list, overlay_model):
-    global last_muzzle_name
-    global last_grip_name
-    global last_butt_name
-    global last_sight_name
+def accessories_monitor(grips_template_list, muzzles_template_list, butt_template_list, sight_template_list,
+                        grips_template_list2, muzzles_template_list2, butt_template_list2, sight_template_list2,
+                        overlay_model):
+
+    global last_muzzle_name, last_grip_name, last_butt_name, last_sight_name
+    global last_muzzle_name2, last_grip_name2, last_butt_name2, last_sight_name2
 
     while True:
         start_time = time.time()
         if is_open_backpack():
+
             screenshot_muzzles = cv2.cvtColor(take_screenshot_dxgi(config.muzzle_screenshot_area), cv2.COLOR_BGR2GRAY)
             screenshot_grips = cv2.cvtColor(take_screenshot_dxgi(config.grip_screenshot_area), cv2.COLOR_BGR2GRAY)
             screenshot_butt = cv2.cvtColor(take_screenshot_dxgi(config.butt_screenshot_area), cv2.COLOR_BGR2GRAY)
             screenshot_sight = cv2.cvtColor(take_screenshot_dxgi(config.sight_screenshot_area), cv2.COLOR_BGR2GRAY)
+
+            screenshot_muzzles2 = cv2.cvtColor(take_screenshot_dxgi(config.muzzle_screenshot_area2), cv2.COLOR_BGR2GRAY)
+            screenshot_grips2 = cv2.cvtColor(take_screenshot_dxgi(config.grip_screenshot_area2), cv2.COLOR_BGR2GRAY)
+            screenshot_butt2 = cv2.cvtColor(take_screenshot_dxgi(config.butt_screenshot_area2), cv2.COLOR_BGR2GRAY)
+            screenshot_sight2 = cv2.cvtColor(take_screenshot_dxgi(config.sight_screenshot_area2), cv2.COLOR_BGR2GRAY)
+
+            # 1号位
             # 循环枪口
             muzzles_max_val_list = firearms_fittings_match(screenshot_muzzles, muzzles_template_list)
             # 循环握把
@@ -311,23 +335,47 @@ def accessories_monitor(grips_template_list, muzzles_template_list, butt_templat
             last_butt_name, butt_similarity = calculate_final_fittings(butt_max_val_list)
             last_sight_name, sight_similarity = calculate_final_fittings(sight_max_val_list)
 
+            # 2号位
+            # 循环枪口
+            muzzles_max_val_list2 = firearms_fittings_match(screenshot_muzzles2, muzzles_template_list2)
+            # 循环握把
+            grip_max_val_list2 = firearms_fittings_match(screenshot_grips2, grips_template_list2)
+            # 循环枪托
+            butt_max_val_list2 = firearms_fittings_match(screenshot_butt2, butt_template_list2)
+            # 循环瞄准镜
+            sight_max_val_list2 = firearms_fittings_match(screenshot_sight2, sight_template_list2)
+
+            last_muzzle_name2, muzzle_similarity2 = calculate_final_fittings(muzzles_max_val_list2)
+            last_grip_name2, grip_similarity2 = calculate_final_fittings(grip_max_val_list2)
+            last_butt_name2, butt_similarity2 = calculate_final_fittings(butt_max_val_list2)
+            last_sight_name2, sight_similarity2 = calculate_final_fittings(sight_max_val_list2)
+
+            # 更新系数
             update_weapon_and_coefficient()
 
             if overlay_model is not None:
                 overlay_model.update_text3(f"检测背包完毕 ===> 耗时: {(time.time() - start_time) * 1000:.2f} ms")
-                text_list = [f"当前使用枪口: {last_muzzle_name} 相似度: {muzzle_similarity:.2f}\n",
-                             f"当前使用握把: {last_grip_name} 相似度: {grip_similarity:.2f}\n",
-                             f"当前使用枪托: {last_butt_name} 相似度: {butt_similarity:.2f}\n",
-                             f"当前使用瞄具: {last_sight_name} 相似度: {sight_similarity:.2f}\n"]
+                text_list = [f"1号位当前使用枪口: {last_muzzle_name} 相似度: {muzzle_similarity:.2f}\n",
+                             f"1当前使用握把: {last_grip_name} 相似度: {grip_similarity:.2f}\n",
+                             f"1当前使用枪托: {last_butt_name} 相似度: {butt_similarity:.2f}\n",
+                             f"1当前使用瞄具: {last_sight_name} 相似度: {sight_similarity:.2f}\n",
+                             f"2号位当前使用枪口: {last_muzzle_name2} 相似度: {muzzle_similarity2:.2f}\n",
+                             f"2当前使用握把: {last_grip_name2} 相似度: {grip_similarity2:.2f}\n",
+                             f"2当前使用枪托: {last_butt_name2} 相似度: {butt_similarity2:.2f}\n",
+                             f"2当前使用瞄具: {last_sight_name2} 相似度: {sight_similarity2:.2f}\n"]
                 overlay_model.update_text4(" ".join(text_list))
             print(f"检测背包完毕 ===> 耗时: {(time.time() - start_time) * 1000:.2f} ms")
         else:
             if overlay_model is not None:
                 overlay_model.update_text3(f"未打开背包 ===> 耗时: {(time.time() - start_time) * 1000:.2f} ms")
-                text_list = [f"当前使用枪口: {last_muzzle_name} \n",
-                             f"当前使用握把: {last_grip_name} \n",
-                             f"当前使用枪托: {last_butt_name} \n",
-                             f"当前使用瞄具: {last_sight_name} \n"]
+                text_list = [f"1号位当前使用枪口: {last_muzzle_name} \n",
+                             f"1号位当前使用握把: {last_grip_name} \n",
+                             f"1号位当前使用枪托: {last_butt_name} \n",
+                             f"1号位当前使用瞄具: {last_sight_name} \n",
+                             f"2号位当前使用枪口: {last_muzzle_name2} \n",
+                             f"2号位当前使用握把: {last_grip_name2} \n",
+                             f"2号位当前使用枪托: {last_butt_name2} \n",
+                             f"2号位当前使用瞄具: {last_sight_name2} \n"]
                 overlay_model.update_text4(" ".join(text_list))
 
         # 等待间隔时间
@@ -360,7 +408,7 @@ def coefficient_monitor(overlay_model, interval):
             with open(config.lua_config_path, 'r', encoding='utf-8') as file:
                 lua_config = file.read()
             if lua_config:
-                overlay_model.update_text8(lua_config)
+                overlay_model.update_text5(lua_config)
         except Exception as e:
             print(e)
         time.sleep(interval)
@@ -382,12 +430,36 @@ def on_press(key):
             grip_filename = os.path.join(dir_name, f"grip_ad_{datestr}.png")
             butt_filename = os.path.join(dir_name, f"butt_ad_{datestr}.png")
             sight_filename = os.path.join(dir_name, f"sight_ad_{datestr}.png")
+            muzzle_filename2 = os.path.join(dir_name, f"muzzle2_ad_{datestr}.png")
+            grip_filename2 = os.path.join(dir_name, f"grip2_ad_{datestr}.png")
+            butt_filename2 = os.path.join(dir_name, f"butt2_ad_{datestr}.png")
+            sight_filename2 = os.path.join(dir_name, f"sight2_ad_{datestr}.png")
 
             cv2.imwrite(weapon_filename, image2bgr(take_screenshot_mss(config.weapon_screenshot_area)))
             cv2.imwrite(muzzle_filename, image2bgr(take_screenshot_mss(config.muzzle_screenshot_area)))
             cv2.imwrite(grip_filename, image2bgr(take_screenshot_mss(config.grip_screenshot_area)))
             cv2.imwrite(butt_filename, image2bgr(take_screenshot_mss(config.butt_screenshot_area)))
             cv2.imwrite(sight_filename, image2bgr(take_screenshot_mss(config.sight_screenshot_area)))
+            cv2.imwrite(muzzle_filename2, image2bgr(take_screenshot_mss(config.muzzle_screenshot_area2)))
+            cv2.imwrite(grip_filename2, image2bgr(take_screenshot_mss(config.grip_screenshot_area2)))
+            cv2.imwrite(butt_filename2, image2bgr(take_screenshot_mss(config.butt_screenshot_area2)))
+            cv2.imwrite(sight_filename2, image2bgr(take_screenshot_mss(config.sight_screenshot_area2)))
+
+            # name1 = os.path.join(dir_name, f"mss_{datestr}.png")
+            # name2 = os.path.join(dir_name, f"dxgi_{datestr}.png")
+            # name3 = os.path.join(dir_name, f"dxgi_re_{datestr}.png")
+            #
+            # cv2.imwrite(name1, image2bgr(take_screenshot_mss(config.muzzle_screenshot_area)))
+            #
+            # cv2.imwrite(name2, take_screenshot_dxgi(config.muzzle_screenshot_area))
+
+            # camera = dxcam.create(output_color="BGR")
+            # left = config.muzzle_screenshot_area['left']
+            # top = config.muzzle_screenshot_area['top']
+            # right = left + config.muzzle_screenshot_area['width']
+            # bottom = top + config.muzzle_screenshot_area['height']
+            # img = camera.grab((left, top, right, bottom))
+            # cv2.imwrite(name3, img)
 
             print("> 截图已保存:")
             print(f"> 右下角武器区域截图,请确保截图范围包括两把武器: {weapon_filename}")
@@ -403,16 +475,26 @@ def on_press(key):
 
 def reset_all():
     global last_weapon_name
+    global last_weapon_no
     global last_muzzle_name
     global last_grip_name
     global last_butt_name
     global last_sight_name
+    global last_muzzle_name2
+    global last_grip_name2
+    global last_butt_name2
+    global last_sight_name2
     global posture_state
     last_weapon_name = "None"
+    last_weapon_no = 1
     last_muzzle_name = 'None'
     last_grip_name = 'None'
     last_butt_name = 'None'
     last_sight_name = 'None'
+    last_muzzle_name2 = 'None'
+    last_grip_name2 = 'None'
+    last_butt_name2 = 'None'
+    last_sight_name2 = 'None'
     posture_state = 1
     update_weapon_and_coefficient()
 
@@ -483,8 +565,32 @@ def realtime_config_monitor():
         config = load_configuration()
         time.sleep(config.config_monitor_interval)
 
+
 def signal_handler(sig, frame):
     print("正在关闭程序...")
+
+
+# dxgi截图线程
+def dxgi_screenshot():
+    global last_frame
+    camera = dxcam.create(output_color="BGR")
+    target_sleep_ms = 20  # 目标休眠时间，单位为毫秒
+
+    while True:
+        start_time = time.perf_counter()  # 记录开始时间
+
+        try:
+            frame = camera.grab()
+            if frame is not None:
+                last_frame = frame
+        except Exception as e:
+            print(f"截图出现异常: {e}")
+
+        elapsed_ms = (time.perf_counter() - start_time) * 1000  # 计算运行时间，单位为毫秒
+        actual_sleep_ms = max(0, int(target_sleep_ms - elapsed_ms))  # 计算实际休眠时间
+
+        time.sleep(actual_sleep_ms / 1000)  # 执行休眠
+
 
 if __name__ == "__main__":
     print("Starting the application...")
@@ -519,6 +625,10 @@ if __name__ == "__main__":
     # 重置枪械, 姿势, 和配件
     reset_all()
 
+    # 启动截图线程
+    screenshot_thread = threading.Thread(target=dxgi_screenshot, daemon=True)
+    screenshot_thread.start()
+
     # 启动监控姿势
     posture_thread = threading.Thread(target=posture_monitor, daemon=True)
     posture_thread.start()
@@ -526,23 +636,33 @@ if __name__ == "__main__":
 
     # 加载灰度模板
     firearms_templates = load_templates("firearms", config.firearm_list)
+
     grips_templates = load_templates("grips", config.grip_list)
     muzzles_templates = load_templates("muzzles", config.muzzle_list)
     butt_templates = load_templates("butt", config.butt_list)
     sight_templates = load_templates("sight", config.sight_list)
 
-    # 启动枪械监控线程
+    grips_templates2 = load_templates("grips2", config.grip_list)
+    muzzles_templates2 = load_templates("muzzles2", config.muzzle_list)
+    butt_templates2 = load_templates("butt2", config.butt_list)
+    sight_templates2 = load_templates("sight2", config.sight_list)
+
+    # # 启动枪械监控线程
     firearm_thread = threading.Thread(target=firearm_monitor, daemon=True, args=(firearms_templates, overlay))
     firearm_thread.start()
     print("> 枪械监控中...")
 
     # 启动配件监控线程
     accessories_thread = threading.Thread(target=accessories_monitor, daemon=True,
-                                      args=(grips_templates,
-                                            muzzles_templates,
-                                            butt_templates,
-                                            sight_templates,
-                                            overlay))
+                                          args=(grips_templates,
+                                                muzzles_templates,
+                                                butt_templates,
+                                                sight_templates,
+                                                grips_templates2,
+                                                muzzles_templates2,
+                                                butt_templates2,
+                                                sight_templates2,
+                                                overlay))
     accessories_thread.start()
     print("> 配件监控中...")
 
