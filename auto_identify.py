@@ -94,7 +94,13 @@ def calculate_recoil_coefficient():
         firearm_coefficient = 1  # 如果键不存在，则使用默认值1
 
     # 计算总系数
-    return round(screen_coefficient * vertical_coefficient * muzzle_coefficient * grip_coefficient * butt_coefficient * sight_coefficient * firearm_coefficient, 4)
+    return round(screen_coefficient
+                 * vertical_coefficient
+                 * muzzle_coefficient
+                 * grip_coefficient
+                 * butt_coefficient
+                 * sight_coefficient
+                 * firearm_coefficient, 4)
 
 
 # 加载模板(从image目录下加载枪械模板)
@@ -546,8 +552,7 @@ def verify_activation_code():
         else:
             print("> 请输入激活码")
             exit_application()
-
-    except Exception as e:
+    except Exception:
         print("> 激活码无效")
         exit_application()
 
@@ -564,10 +569,6 @@ def realtime_config_monitor():
     while True:
         config = load_configuration()
         time.sleep(config.config_monitor_interval)
-
-
-def signal_handler(sig, frame):
-    print("正在关闭程序...")
 
 
 # dxgi截图线程
@@ -667,8 +668,6 @@ if __name__ == "__main__":
     print("> 配件监控中...")
 
     # 处理退出程序
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
     stop_event = threading.Event()
 
     if config.is_open_overlay:
