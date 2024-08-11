@@ -2,5 +2,7 @@ numpy
 opencv-python
 opencv-contrib-python
 pyautogui
-pynput
+pynput==1.6.8
 mss
+cryptography
+dxcam
