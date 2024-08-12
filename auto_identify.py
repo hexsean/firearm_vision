@@ -229,7 +229,8 @@ def firearm_monitor(templates, overlay_model):
 
     while True:
         start_time = time.time()
-        screenshot = adaptive_threshold(cv2.cvtColor(take_screenshot_dxgi(config.weapon_screenshot_area), cv2.COLOR_BGR2GRAY))
+        screenshot = adaptive_threshold(cv2.cvtColor(take_screenshot_dxgi(config.weapon_screenshot_area),
+                                                     cv2.COLOR_BGR2GRAY))
         match_found = False
 
         max_val_list = {}
@@ -250,7 +251,7 @@ def firearm_monitor(templates, overlay_model):
                 name = max(max_val_list, key=lambda x: max_val_list[x][0])
 
                 # 判断图片位置
-                if max_val_list[name][1][1] > 75:
+                if max_val_list[name][1][1] > config.weapon_altitude:
                     no = 1
                 else:
                     no = 2
@@ -260,7 +261,8 @@ def firearm_monitor(templates, overlay_model):
                     last_weapon_name = name
                     last_weapon_no = no
                     update_weapon_and_coefficient()
-                    str_msg = f"耗时: {(time.time() - start_time) * 1000:.2f} ms, 更新时相似度: {max_val_list.get(name)} 当前{no}号位使用武器: {name}"
+                    str_msg = (f"耗时: {(time.time() - start_time) * 1000:.2f} ms, 更新时相似度: {max_val_list.get(name)} "
+                               f"当前{no}号位使用武器: {name}")
                     print(str_msg)
 
                     if overlay_model is not None:
@@ -613,7 +615,9 @@ if __name__ == "__main__":
         # 创建监控窗口
         overlay = TextOverlay(tk.Tk(), config.overlay_position[0], config.overlay_position[1])
         # 启动监控线程
-        coefficient_thread = threading.Thread(target=coefficient_monitor, daemon=True, args=(overlay, config.coefficient_monitor_interval))
+        coefficient_thread = threading.Thread(target=coefficient_monitor,
+                                              daemon=True,
+                                              args=(overlay, config.coefficient_monitor_interval))
         coefficient_thread.start()
         print("> 计算系数监控中...")
 

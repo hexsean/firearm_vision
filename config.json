@@ -12,6 +12,7 @@
     ],
     "is_open_screenshot_of_keystrokes": false,
     "vertical_sensitivity_magnification": 1,
+    "weapon_altitude": 75,
     "weapon_screenshot_area": {
         "left": 2740,
         "top": 1260,
