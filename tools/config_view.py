@@ -51,10 +51,8 @@ class ConfigGUI:
         # 武器配置
         self.create_firearms_config_tab()
 
-
-        #
-        # # 其他配置
-        # self.create_other_config_tab()
+        # 其他配置
+        self.create_other_config_tab()
 
     def create_basic_config_tab(self):
         basic_config_tab = ttk.Frame(self.notebook)
@@ -91,9 +89,27 @@ class ConfigGUI:
         is_open_overlay_checkbutton.grid(row=3, column=1, columnspan=1)
         is_open_screenshot_of_keystrokes_checkbutton.grid(row=4, column=1, columnspan=1)
 
+        # 垂直灵敏度放大倍数
+        vertical_sensitivity_label = tk.Label(basic_config_tab, text="垂直灵敏度放大倍数:")
+        vertical_sensitivity_label.grid(row=6, column=0)  # 调整行号
+
+        vertical_sensitivity_var = tk.StringVar()
+        vertical_sensitivity_entry = tk.Entry(basic_config_tab, textvariable=vertical_sensitivity_var)
+        vertical_sensitivity_entry.grid(row=6, column=1)  # 调整行号
+        self.ui_vars["vertical_sensitivity_magnification"] = vertical_sensitivity_var
+
+        # 武器高度
+        weapon_altitude_label = tk.Label(basic_config_tab, text="武器高度:")
+        weapon_altitude_label.grid(row=7, column=0)  # 调整行号
+
+        weapon_altitude_var = tk.StringVar()
+        weapon_altitude_entry = tk.Entry(basic_config_tab, textvariable=weapon_altitude_var)
+        weapon_altitude_entry.grid(row=7, column=1)  # 调整行号
+        self.ui_vars["weapon_altitude"] = weapon_altitude_var
+
         # 屏幕分辨率控件
         screen_resolution_frame = tk.LabelFrame(basic_config_tab, text="屏幕分辨率")
-        screen_resolution_frame.grid(row=5, column=0, columnspan=3, padx=10, pady=10)
+        screen_resolution_frame.grid(row=8, column=1, columnspan=3, padx=10, pady=10)
 
         if "screen_resolution" not in self.ui_vars:
             self.ui_vars["screen_resolution"] = [tk.StringVar(), tk.StringVar()]
@@ -107,6 +123,15 @@ class ConfigGUI:
         screen_height_label.grid(row=1, column=0)
         screen_height_entry = tk.Entry(screen_resolution_frame, textvariable=self.ui_vars["screen_resolution"][1])
         screen_height_entry.grid(row=1, column=1)
+
+    def browse_lua_config_file(self):
+        filepath = filedialog.askopenfilename(
+            initialdir="/",
+            title="Select a File",
+            filetypes=(("Lua files", "*.lua"), ("all files", "*.*"))
+        )
+        if filepath:
+            self.config_file_path.set(filepath)
 
     def create_screenshot_area_tab(self):
         screenshot_area_tab = ttk.Frame(self.notebook)
@@ -157,6 +182,25 @@ class ConfigGUI:
             if row_num > 4:  # 每列最多5个
                 row_num = 0
                 col_num += 1
+
+    def create_screenshot_area_entries(self, parent_frame, config_key):
+        # 如果 self.config_data 中不存在该配置项，则设置默认值
+        if config_key not in self.config_data:
+            self.config_data[config_key] = {'left': 0, 'top': 0, 'width': 0, 'height': 0}
+
+        # 在 ui_vars 中创建对应的字典
+        self.ui_vars[config_key] = {}
+
+        area_data = self.config_data[config_key]
+        for i, key in enumerate(["left", "top", "width", "height"]):
+            label = tk.Label(parent_frame, text=key + ":")
+            label.grid(row=i, column=0, padx=5, pady=5)
+
+            var = tk.StringVar(value=str(area_data[key]))  # 直接使用 config_data 中的值
+            entry = tk.Entry(parent_frame, textvariable=var)
+            entry.grid(row=i, column=1, padx=5, pady=5)
+
+            self.ui_vars[config_key][key] = var
 
     def create_firearms_config_tab(self):
         firearms_config_tab = ttk.Frame(self.notebook)
@@ -228,64 +272,6 @@ class ConfigGUI:
             coef_entry = tk.Entry(coefficient_list_frame, textvariable=coef_var, width=5)
             coef_entry.grid(row=0, column=i * 2 + 1, padx=5, pady=5)
 
-    def create_other_config_tab(self):
-        other_config_tab = ttk.Frame(self.notebook)
-        self.notebook.add(other_config_tab, text="其他配置")
-
-        # 遍历其他配置项,
-        row_num = 0
-        for config_key, config_value in list(self.config.items()):  # 复制 keys
-            if config_key not in ["lua_config_path", "firearms", "screen_resolution", "overlay_position",
-                                  "weapon_screenshot_area", "muzzle_screenshot_area", "grip_screenshot_area",
-                                  "butt_screenshot_area", "sight_screenshot_area", "muzzle_screenshot_area2",
-                                  "grip_screenshot_area2", "butt_screenshot_area2", "sight_screenshot_area2",
-                                  "enable_realtime_configuration", "is_open_overlay",
-                                  "is_open_screenshot_of_keystrokes",
-                                  "vertical_sensitivity_magnification"]:
-
-                config_label = tk.Label(other_config_tab, text=config_key + ":")
-                config_label.grid(row=row_num, column=0)
-
-                if isinstance(config_value, bool):
-                    config_var = tk.BooleanVar(value=config_value)
-                    config_entry = tk.Checkbutton(other_config_tab, variable=config_var)
-                elif isinstance(config_value, (int, float)):
-                    config_var = tk.StringVar(value=config_value)
-                    config_entry = tk.Entry(other_config_tab, textvariable=config_var)
-                elif isinstance(config_value, list):
-                    config_var = tk.StringVar(value=", ".join(map(str, config_value)))
-                    config_entry = tk.Entry(other_config_tab, textvariable=config_var)
-                elif isinstance(config_value, dict):
-                    config_var = tk.StringVar(value=json.dumps(config_value, indent=2))  # 格式化字典输出
-                    config_entry = tk.Text(other_config_tab, height=5, width=50)
-                    config_entry.insert(tk.END, config_var.get())
-                else:
-                    config_var = tk.StringVar(value=str(config_value))
-                    config_entry = tk.Entry(other_config_tab, textvariable=config_var, state="readonly")
-
-                config_entry.grid(row=row_num, column=1)
-                self.config[config_key + "_var"] = config_var  # 保存变量引用
-                row_num += 1
-
-    def create_screenshot_area_entries(self, parent_frame, config_key):
-        # 如果 self.config_data 中不存在该配置项，则设置默认值
-        if config_key not in self.config_data:
-            self.config_data[config_key] = {'left': 0, 'top': 0, 'width': 0, 'height': 0}
-
-        # 在 ui_vars 中创建对应的字典
-        self.ui_vars[config_key] = {}
-
-        area_data = self.config_data[config_key]
-        for i, key in enumerate(["left", "top", "width", "height"]):
-            label = tk.Label(parent_frame, text=key + ":")
-            label.grid(row=i, column=0, padx=5, pady=5)
-
-            var = tk.StringVar(value=str(area_data[key]))  # 直接使用 config_data 中的值
-            entry = tk.Entry(parent_frame, textvariable=var)
-            entry.grid(row=i, column=1, padx=5, pady=5)
-
-            self.ui_vars[config_key][key] = var
-
     def browse_config_file(self):
         filepath = filedialog.askopenfilename(
             initialdir="/",
@@ -324,18 +310,6 @@ class ConfigGUI:
 
     def validate_config(self):
         # ... 其他验证逻辑
-
-        # 验证屏幕分辨率
-        # try:
-        #     width = int(self.screen_width_var.get())
-        #     height = int(self.screen_height_var.get())
-        #     if width <= 0 or height <= 0:
-        #         return False
-        # except ValueError:
-        #     return False
-
-        # ... 其他验证逻辑
-
         return True
 
     def update_config_from_ui(self):
@@ -364,47 +338,51 @@ class ConfigGUI:
                         self.config_data[config_key][key] = int(self.ui_vars[config_key][key].get())
                     except ValueError:
                         print(f"Error: Invalid value for {config_key}.{key}")
+            # 垂直灵敏度放大倍数
+            try:
+                self.config_data["vertical_sensitivity_magnification"] = \
+                    float(self.ui_vars["vertical_sensitivity_magnification"].get())
+            except ValueError:
+                print("Error: Invalid vertical sensitivity magnification")
+
+            # 武器高度
+            try:
+                self.config_data["weapon_altitude"] = int(self.ui_vars["weapon_altitude"].get())
+            except ValueError:
+                print("Error: Invalid weapon altitude")
+
+            # 武器配置
+            for firearm_name, firearm_ui_vars in self.ui_vars["firearms"].items():
+                try:
+                    self.config_data["firearms"][firearm_name]["recognition_confidence_threshold"] = \
+                        float(firearm_ui_vars["recognition_confidence_threshold"].get())
+                except ValueError:
+                    print(f"Error: Invalid recognition threshold for {firearm_name}")
+
+                try:
+                    self.config_data["firearms"][firearm_name]["coefficient_list"] = [
+                        float(firearm_ui_vars[f"coefficient_list_{i}"].get()) for i in range(4)
+                    ]
+                except ValueError:
+                    print(f"Error: Invalid coefficient list for {firearm_name}")
+
+            # 其他配置项
+            for config_key in ["index", "interval"]:
+                for key, var in self.ui_vars[config_key].items():
+                    try:
+                        # 根据原始配置类型进行转换
+                        if isinstance(self.config_data[config_key][key], list):
+                            self.config_data[config_key][key] = [int(x) for x in var.get().split(",")]
+                        elif isinstance(self.config_data[config_key][key], (int, float)):
+                            self.config_data[config_key][key] = float(var.get())
+                        else:
+                            self.config_data[config_key][key] = var.get()
+                    except ValueError:
+                        print(f"Error: Invalid value for {config_key}.{key}")
+
             messagebox.showinfo("Success", "配置保存成功")
         else:
             messagebox.showerror("Error", "请先加载配置文件")
-
-        # 武器配置
-        for firearm_name, firearm_ui_vars in self.ui_vars["firearms"].items():
-            try:
-                self.config_data["firearms"][firearm_name]["recognition_confidence_threshold"] = \
-                    float(firearm_ui_vars["recognition_confidence_threshold"].get())
-            except ValueError:
-                print(f"Error: Invalid recognition threshold for {firearm_name}")
-
-            try:
-                self.config_data["firearms"][firearm_name]["coefficient_list"] = [
-                    float(firearm_ui_vars[f"coefficient_list_{i}"].get()) for i in range(4)
-                ]
-            except ValueError:
-                print(f"Error: Invalid coefficient list for {firearm_name}")
-
-        #
-        # # 其他配置项
-        # for config_key, config_value in self.config.items():
-        #     if config_key.endswith("_var"):
-        #         original_key = config_key[:-4]
-        #         if isinstance(self.config[original_key], bool):
-        #             self.config[original_key] = self.config[config_key].get()
-        #         elif isinstance(self.config[original_key], (int, float)):
-        #             try:
-        #                 self.config[original_key] = float(self.config[config_key].get())
-        #             except ValueError:
-        #                 print(f"Error: Invalid value for {original_key}")
-        #         elif isinstance(self.config[original_key], list):
-        #             try:
-        #                 self.config[original_key] = [int(x) for x in self.config[config_key].get().split(",")]
-        #             except ValueError:
-        #                 print(f"Error: Invalid value for {original_key}")
-        #         elif isinstance(self.config[original_key], dict):
-        #             try:
-        #                 self.config[original_key] = json.loads(self.config[config_key].get())
-        #             except json.JSONDecodeError:
-        #                 print(f"Error: Invalid JSON format for {original_key}")
 
     def update_ui_from_config(self):
         # 基本配置
@@ -417,6 +395,15 @@ class ConfigGUI:
         if "screen_resolution" in self.config_data:
             self.ui_vars["screen_resolution"][0].set(self.config_data["screen_resolution"][0])
             self.ui_vars["screen_resolution"][1].set(self.config_data["screen_resolution"][1])
+        # 垂直灵敏度放大倍数
+        if "vertical_sensitivity_magnification" in self.config_data:
+            self.ui_vars["vertical_sensitivity_magnification"].set(
+                str(self.config_data["vertical_sensitivity_magnification"])
+            )
+
+        # 武器高度
+        if "weapon_altitude" in self.config_data:
+            self.ui_vars["weapon_altitude"].set(str(self.config_data["weapon_altitude"]))
 
         # 屏幕截图区域
         for config_key in ["weapon_screenshot_area", "sight_screenshot_area",
@@ -439,15 +426,11 @@ class ConfigGUI:
                 self.ui_vars["firearms"][firearm_name][f"coefficient_list_{i}"].set(
                     str(firearm_data["coefficient_list"][i])
                 )
-
-        # # 其他配置项
-        # for config_key, config_value in self.config_data.items():
-        #     if config_key.endswith("_var"):
-        #         original_key = config_key[:-4]
-        #         if isinstance(self.config_data[original_key], dict):
-        #             self.config_data[config_key].set(json.dumps(self.config_data[original_key], indent=2))
-        #         else:
-        #             self.config_data[config_key].set(self.config_data[original_key])
+        # 其他配置项
+        for config_key in ["index", "interval"]:
+            if config_key in self.config_data:
+                for key, value in self.config_data[config_key].items():
+                    self.ui_vars[config_key][key].set(str(value))  # 更新 StringVar 的值
 
     def create_screenshot_tab(self):
         screenshot_tab = ttk.Frame(self.notebook)
@@ -600,6 +583,107 @@ class ConfigGUI:
         create_screenshot_row_template(buttons_frame, "一号武器：无枪口 + 无握把 + 四倍瞄准镜 + 无枪托\n"
                                                       "二号武器：无枪口 + 无握把 + 四倍瞄准镜 + 无枪托", "点击保存截图5")
 
+    def create_other_config_tab(self):
+        other_config_tab = ttk.Frame(self.notebook)
+        self.notebook.add(other_config_tab, text="其他配置")
+
+        # 创建 Canvas
+        canvas = tk.Canvas(other_config_tab)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # 创建 Scrollbar
+        scrollbar = tk.Scrollbar(other_config_tab, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # 将 Canvas 与 Scrollbar 关联
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+        # 绑定鼠标滚轮事件
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+        canvas.bind("<MouseWheel>", _on_mousewheel)
+
+        # 在 Canvas 中创建 Frame
+        inner_frame = tk.Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor='nw')
+
+        # index 配置项
+        index_frame = tk.LabelFrame(inner_frame, text="坐标")
+        index_frame.pack(padx=10, pady=10, fill=tk.X)
+        self.create_index_entries(index_frame)  # 直接创建，不判断 isLoadConfig
+
+        # interval 配置项
+        interval_frame = tk.LabelFrame(inner_frame, text="休眠")
+        interval_frame.pack(padx=10, pady=10, fill=tk.X)
+        self.create_interval_entries(interval_frame)  # 直接创建，不判断 isLoadConfig
+
+        # # firearms_accessories_list 配置项
+        # firearms_accessories_list_frame = tk.LabelFrame(inner_frame, text="配件区域")
+        # firearms_accessories_list_frame.pack(padx=10, pady=10, fill=tk.X)
+        # self.create_firearms_accessories_list_entries(firearms_accessories_list_frame)  # 直接创建，不判断 isLoadConfig
+
+    def create_index_entries(self, parent_frame):
+        # 固定参数名
+        index_keys = ["bullet", "backpack", "energy_drink", "antivirus_backpack", "posture_2", "posture_3"]
+
+        # 在 ui_vars 中创建对应的字典
+        self.ui_vars["index"] = {}
+
+        for i, key in enumerate(index_keys):
+            label = tk.Label(parent_frame, text=key + ":")
+            label.grid(row=i, column=0, padx=5, pady=5)
+
+            # 如果 self.config_data["index"] 中不存在该键，则设置默认值 []
+            value = self.config_data.get("index", {}).get(key, [])
+
+            if isinstance(value, list):
+                var = tk.StringVar(value=", ".join(map(str, value)))
+                entry = tk.Entry(parent_frame, textvariable=var)
+                entry.grid(row=i, column=1, padx=5, pady=5)
+            else:
+                var = tk.StringVar(value="0")  # 默认值为 0
+                entry = tk.Entry(parent_frame, textvariable=var, state="readonly")
+                entry.grid(row=i, column=1, padx=5, pady=5)
+
+            self.ui_vars["index"][key] = var
+
+    def create_interval_entries(self, parent_frame):
+        # 固定参数名
+        interval_keys = ["firearm_monitor_interval", "accessories_monitor_interval", "posture_monitor_interval",
+                         "coefficient_monitor_interval", "config_monitor_interval"]
+
+        # 在 ui_vars 中创建对应的字典
+        self.ui_vars["interval"] = {}
+
+        for i, key in enumerate(interval_keys):
+            label = tk.Label(parent_frame, text=key + ":")
+            label.grid(row=i, column=0, padx=5, pady=5)
+
+            # 如果 self.config_data["interval"] 中不存在该键，则设置默认值 0
+            value = self.config_data.get("interval", {}).get(key, 0)
+
+            var = tk.StringVar(value=str(value))
+            entry = tk.Entry(parent_frame, textvariable=var)
+            entry.grid(row=i, column=1, padx=5, pady=5)
+
+            self.ui_vars["interval"][key] = var
+
+    def create_firearms_accessories_list_entries(self, parent_frame):
+        # 在 ui_vars 中创建对应的字典
+        self.ui_vars["firearms_accessories_list"] = {}
+
+        # 这里为了简化，直接将整个字典内容显示在一个 Text 控件中，你可以根据需要设计更复杂的 UI
+        label = tk.Label(parent_frame, text="firearms_accessories_list:")
+        label.grid(row=0, column=0, padx=5, pady=5)
+
+        var = tk.StringVar(value=json.dumps(self.config_data["firearms_accessories_list"], indent=2))
+        text_widget = tk.Text(parent_frame, height=10, width=50)
+        text_widget.insert(tk.END, var.get())
+        text_widget.grid(row=0, column=1, padx=5, pady=5)
+
+        self.ui_vars["firearms_accessories_list"]["text"] = var
 
 if __name__ == '__main__':
     root = tk.Tk()

@@ -8,6 +8,8 @@ class UserConfiguration:
         self.is_open_overlay = config["is_open_overlay"]
         # 是否开启按键截图
         self.is_open_screenshot_of_keystrokes = config["is_open_screenshot_of_keystrokes"]
+        # 获取武器区分12高度
+        self.weapon_altitude = config["weapon_altitude"]
         # 获取武器截图区域(left, top, width, height)
         self.weapon_screenshot_area = config["weapon_screenshot_area"]
         # 获取屏幕高度(像素)
