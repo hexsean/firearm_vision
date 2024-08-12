@@ -1,36 +1,60 @@
 import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
 import json
+import os
+
+import cv2
+import dxcam
+
 
 class ConfigGUI:
     def __init__(self, master):
         self.master = master
-        master.title("程序配置")
+        master.title("自动识别程序配置")
+        master.geometry('600x700')
 
-        # 创建 Notebook
+        # 创建 Notebook选项卡
         self.notebook = ttk.Notebook(master)
         self.notebook.pack(fill=tk.BOTH, expand=True)
 
-        # 配置文件路径
-        self.config_file_path = tk.StringVar()
+        self.isLoadConfig = False
+        # 原始配置数据
+        self.config_data = {}
 
-        # 初始化 config
-        self.config = {}
+        # UI 变量
+        self.ui_vars = {}
+
+        # 配置文件路径
+        self.config_file_path = tk.StringVar(value=os.path.join(os.path.dirname(__file__), "config.json"))
+
+        self.camera = dxcam.create(output_color="BGR")
+
+        # 加载和保存按钮 - 放在主窗口底部
+        button_frame = tk.Frame(master)
+        button_frame.pack(side=tk.BOTTOM, pady=10)  # 放在底部，设置垂直间距
+
+        load_button = tk.Button(button_frame, text="加载配置", command=self.load_config)
+        load_button.pack(side=tk.LEFT, padx=5)  # 放在左边，设置水平间距
+
+        save_button = tk.Button(button_frame, text="保存配置", command=self.save_config)
+        save_button.pack(side=tk.LEFT, padx=5)  # 放在左边，设置水平间距
 
         # 基本配置
         self.create_basic_config_tab()
 
-        # 屏幕截图区域
+        # 获取截图
+        self.create_screenshot_tab()
+
+        # 截图区域设置
         self.create_screenshot_area_tab()
 
         # 武器配置
         self.create_firearms_config_tab()
 
-        # 其他配置
-        self.create_other_config_tab()
 
-        # 初始化 config
-        self.config = {}
+        #
+        # # 其他配置
+        # self.create_other_config_tab()
 
     def create_basic_config_tab(self):
         basic_config_tab = ttk.Frame(self.notebook)
@@ -39,58 +63,93 @@ class ConfigGUI:
         # 配置文件路径
         config_file_label = tk.Label(basic_config_tab, text="配置文件路径:")
         config_file_label.grid(row=0, column=0)
+
         config_file_entry = tk.Entry(basic_config_tab, textvariable=self.config_file_path, width=50)
         config_file_entry.grid(row=0, column=1)
+
         browse_button = tk.Button(basic_config_tab, text="浏览", command=self.browse_config_file)
         browse_button.grid(row=0, column=2)
 
-        # 加载和保存按钮
-        load_button = tk.Button(basic_config_tab, text="加载配置", command=self.load_config)
-        load_button.grid(row=1, column=0)
-        save_button = tk.Button(basic_config_tab, text="保存配置", command=self.save_config)
-        save_button.grid(row=1, column=1)
-
         # 实时配置开关
-        self.enable_realtime_config_var = tk.BooleanVar()
+        self.ui_vars["enable_realtime_configuration"] = tk.BooleanVar()
         enable_realtime_config_checkbutton = tk.Checkbutton(
-            basic_config_tab, text="启用实时配置", variable=self.enable_realtime_config_var
+            basic_config_tab, text="启用实时配置", variable=self.ui_vars["enable_realtime_configuration"]
         )
-        enable_realtime_config_checkbutton.grid(row=2, column=0, columnspan=2)
 
-        # 屏幕分辨率
+        # 启用实时监控
+        self.ui_vars["is_open_overlay"] = tk.BooleanVar()
+        is_open_overlay_checkbutton = tk.Checkbutton(
+            basic_config_tab, text="启用实时监控", variable=self.ui_vars["is_open_overlay"]
+        )
+
+        self.ui_vars["is_open_screenshot_of_keystrokes"] = tk.BooleanVar()
+        is_open_screenshot_of_keystrokes_checkbutton = tk.Checkbutton(
+            basic_config_tab, text="启用按键截图", variable=self.ui_vars["is_open_screenshot_of_keystrokes"]
+        )
+
+        enable_realtime_config_checkbutton.grid(row=2, column=1, columnspan=1)
+        is_open_overlay_checkbutton.grid(row=3, column=1, columnspan=1)
+        is_open_screenshot_of_keystrokes_checkbutton.grid(row=4, column=1, columnspan=1)
+
+        # 屏幕分辨率控件
         screen_resolution_frame = tk.LabelFrame(basic_config_tab, text="屏幕分辨率")
-        screen_resolution_frame.grid(row=3, column=0, columnspan=3, padx=10, pady=10)
-        self.screen_width_var = tk.StringVar()
-        self.screen_height_var = tk.StringVar()
+        screen_resolution_frame.grid(row=5, column=0, columnspan=3, padx=10, pady=10)
+
+        if "screen_resolution" not in self.ui_vars:
+            self.ui_vars["screen_resolution"] = [tk.StringVar(), tk.StringVar()]
+
         screen_width_label = tk.Label(screen_resolution_frame, text="宽度:")
         screen_width_label.grid(row=0, column=0)
-        screen_width_entry = tk.Entry(screen_resolution_frame, textvariable=self.screen_width_var)
+        screen_width_entry = tk.Entry(screen_resolution_frame, textvariable=self.ui_vars["screen_resolution"][0])
         screen_width_entry.grid(row=0, column=1)
+
         screen_height_label = tk.Label(screen_resolution_frame, text="高度:")
         screen_height_label.grid(row=1, column=0)
-        screen_height_entry = tk.Entry(screen_resolution_frame, textvariable=self.screen_height_var)
+        screen_height_entry = tk.Entry(screen_resolution_frame, textvariable=self.ui_vars["screen_resolution"][1])
         screen_height_entry.grid(row=1, column=1)
 
     def create_screenshot_area_tab(self):
         screenshot_area_tab = ttk.Frame(self.notebook)
-        self.notebook.add(screenshot_area_tab, text="屏幕截图区域")
+        self.notebook.add(screenshot_area_tab, text="截图区域设置")
+
+        # 创建 Canvas
+        canvas = tk.Canvas(screenshot_area_tab)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)  # 填充并扩展
+
+        # 创建 Scrollbar
+        scrollbar = tk.Scrollbar(screenshot_area_tab, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # 将 Canvas 与 Scrollbar 关联
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+        # 绑定鼠标滚轮事件
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+        canvas.bind("<MouseWheel>", _on_mousewheel)
+
+        # 在 Canvas 中创建 Frame
+        inner_frame = tk.Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor='nw')
 
         screenshot_areas = [
             ("weapon_screenshot_area", "武器截图区域"),
-            ("sight_screenshot_area", "瞄准镜截图区域"),
-            ("muzzle_screenshot_area", "枪口截图区域"),
-            ("grip_screenshot_area", "握把截图区域"),
-            ("butt_screenshot_area", "枪托截图区域"),
-            ("muzzle_screenshot_area2", "枪口截图区域2"),
-            ("grip_screenshot_area2", "握把截图区域2"),
-            ("butt_screenshot_area2", "枪托截图区域2"),
-            ("sight_screenshot_area2", "瞄准镜截图区域2")
+            ("sight_screenshot_area", "1号位瞄准镜截图区域"),
+            ("muzzle_screenshot_area", "1号位枪口截图区域"),
+            ("grip_screenshot_area", "1号位握把截图区域"),
+            ("butt_screenshot_area", "1号位枪托截图区域"),
+            ("muzzle_screenshot_area2", "2号位枪口截图区域"),
+            ("grip_screenshot_area2", "2号位握把截图区域"),
+            ("butt_screenshot_area2", "2号位枪托截图区域"),
+            ("sight_screenshot_area2", "2号位瞄准镜截图区域")
         ]
 
         row_num = 0
         col_num = 0
         for config_key, frame_text in screenshot_areas:
-            frame = tk.LabelFrame(screenshot_area_tab, text=frame_text)
+            frame = tk.LabelFrame(inner_frame, text=frame_text)  # 将 frame 放置在 inner_frame 中
             frame.grid(row=row_num, column=col_num, padx=10, pady=10)
             self.create_screenshot_area_entries(frame, config_key)
 
@@ -112,37 +171,62 @@ class ConfigGUI:
         canvas.configure(yscrollcommand=scrollbar.set)
         canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
 
+        # 绑定鼠标滚轮事件
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+        canvas.bind("<MouseWheel>", _on_mousewheel)
+
         firearms_inner_frame = tk.Frame(canvas)
         canvas.create_window((0, 0), window=firearms_inner_frame, anchor='nw')
 
+        # 固定枪械列表
+        firearm_names = ["akm", "qbz", "m762", "groza", "scarl", "m16a4", "aug", "m416", "k2", "g36c",
+                         "mk47", "ace32", "ump", "mp5k", "vkt", "p90", "m249", "dp28", "mg3", "famae"]
+
         # 遍历 firearms 配置项
-        row_num = 0
-        for firearm_name, firearm_data in self.config.get("firearms", {}).items():
-            firearm_subframe = tk.LabelFrame(firearms_inner_frame, text=firearm_name)
-            firearm_subframe.grid(row=row_num, column=0, padx=10, pady=5)
+        for firearm_name in firearm_names:
+            self.create_firearm_config_entries(firearms_inner_frame, firearm_name)
 
-            # 识别阈值
-            recognition_threshold_label = tk.Label(firearm_subframe, text="识别阈值:")
-            recognition_threshold_label.grid(row=0, column=0)
-            recognition_threshold_var = tk.StringVar(value=firearm_data["recognition_confidence_threshold"])
-            firearm_data["recognition_threshold_var"] = recognition_threshold_var
-            recognition_threshold_entry = tk.Entry(firearm_subframe, textvariable=recognition_threshold_var)
-            recognition_threshold_entry.grid(row=0, column=1)
+    def create_firearm_config_entries(self, parent_frame, firearm_name):
+        # 如果 self.config_data["firearms"] 不存在或为空，则创建一个空字典
+        if "firearms" not in self.config_data or self.config_data.get("firearms", {}) == {}:
+            self.config_data["firearms"] = {}
 
-            # 系数列表
-            coefficient_list_frame = tk.Frame(firearm_subframe)
-            coefficient_list_frame.grid(row=1, column=0, columnspan=2)
-            coefficient_list_vars = []
-            for i in range(4):
-                coef_label = tk.Label(coefficient_list_frame, text=f"系数{i+1}:")
-                coef_label.pack(side=tk.LEFT)
-                coef_var = tk.StringVar(value=firearm_data["coefficient_list"][i])
-                coefficient_list_vars.append(coef_var)
-                coef_entry = tk.Entry(coefficient_list_frame, textvariable=coef_var, width=5)
-                coef_entry.pack(side=tk.LEFT)
-            firearm_data["coefficient_list_vars"] = coefficient_list_vars
+        # 如果 self.config_data["firearms"] 中不存在该配置项，则设置默认值
+        if firearm_name not in self.config_data["firearms"]:
+            self.config_data["firearms"][firearm_name] = {
+                'recognition_confidence_threshold': 0,
+                'coefficient_list': [0, 0, 0, 0]
+            }
 
-            row_num += 1
+        # 在 ui_vars 中创建对应的字典
+        if "firearms" not in self.ui_vars or self.ui_vars.get("firearms", {}) == {}:
+            self.ui_vars["firearms"] = {}
+        self.ui_vars["firearms"][firearm_name] = {}
+
+        firearm_data = self.config_data["firearms"][firearm_name]
+        firearm_subframe = tk.LabelFrame(parent_frame, text=firearm_name)
+        firearm_subframe.pack(padx=10, pady=10, fill=tk.X)
+
+        # 识别阈值
+        recognition_threshold_label = tk.Label(firearm_subframe, text="识别阈值:")
+        recognition_threshold_label.grid(row=0, column=0, padx=5, pady=5)
+        recognition_threshold_var = tk.StringVar(value=str(firearm_data["recognition_confidence_threshold"]))
+        self.ui_vars["firearms"][firearm_name]["recognition_confidence_threshold"] = recognition_threshold_var
+        recognition_threshold_entry = tk.Entry(firearm_subframe, textvariable=recognition_threshold_var)
+        recognition_threshold_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        # 系数列表
+        coefficient_list_frame = tk.Frame(firearm_subframe)
+        coefficient_list_frame.grid(row=1, column=0, columnspan=2, padx=5, pady=5)
+        for i in range(4):
+            coef_label = tk.Label(coefficient_list_frame, text=f"系数{i + 1}:")
+            coef_label.grid(row=0, column=i * 2, padx=5, pady=5)
+            coef_var = tk.StringVar(value=str(firearm_data["coefficient_list"][i]))
+            self.ui_vars["firearms"][firearm_name][f"coefficient_list_{i}"] = coef_var
+            coef_entry = tk.Entry(coefficient_list_frame, textvariable=coef_var, width=5)
+            coef_entry.grid(row=0, column=i * 2 + 1, padx=5, pady=5)
 
     def create_other_config_tab(self):
         other_config_tab = ttk.Frame(self.notebook)
@@ -150,12 +234,13 @@ class ConfigGUI:
 
         # 遍历其他配置项,
         row_num = 0
-        for config_key, config_value in list(self.config.items()): # 复制 keys
+        for config_key, config_value in list(self.config.items()):  # 复制 keys
             if config_key not in ["lua_config_path", "firearms", "screen_resolution", "overlay_position",
                                   "weapon_screenshot_area", "muzzle_screenshot_area", "grip_screenshot_area",
                                   "butt_screenshot_area", "sight_screenshot_area", "muzzle_screenshot_area2",
                                   "grip_screenshot_area2", "butt_screenshot_area2", "sight_screenshot_area2",
-                                  "enable_realtime_configuration", "is_open_overlay", "is_open_screenshot_of_keystrokes",
+                                  "enable_realtime_configuration", "is_open_overlay",
+                                  "is_open_screenshot_of_keystrokes",
                                   "vertical_sensitivity_magnification"]:
 
                 config_label = tk.Label(other_config_tab, text=config_key + ":")
@@ -182,36 +267,46 @@ class ConfigGUI:
                 self.config[config_key + "_var"] = config_var  # 保存变量引用
                 row_num += 1
 
-
     def create_screenshot_area_entries(self, parent_frame, config_key):
-        area_data = self.config.get(config_key, {})
-        for key in ["left", "top", "width", "height"]:
+        # 如果 self.config_data 中不存在该配置项，则设置默认值
+        if config_key not in self.config_data:
+            self.config_data[config_key] = {'left': 0, 'top': 0, 'width': 0, 'height': 0}
+
+        # 在 ui_vars 中创建对应的字典
+        self.ui_vars[config_key] = {}
+
+        area_data = self.config_data[config_key]
+        for i, key in enumerate(["left", "top", "width", "height"]):
             label = tk.Label(parent_frame, text=key + ":")
-            label.grid(row=0, column=0)
-            var = tk.StringVar(value=area_data.get(key, 0))
+            label.grid(row=i, column=0, padx=5, pady=5)
+
+            var = tk.StringVar(value=str(area_data[key]))  # 直接使用 config_data 中的值
             entry = tk.Entry(parent_frame, textvariable=var)
-            entry.grid(row=0, column=1)
-            self.config[config_key + "_" + key + "_var"] = var
+            entry.grid(row=i, column=1, padx=5, pady=5)
+
+            self.ui_vars[config_key][key] = var
 
     def browse_config_file(self):
         filepath = filedialog.askopenfilename(
-            initialdir = "/",
-            title = "Select a File",
-            filetypes = (("Json files", "*.json"), ("all files", "*.*"))
+            initialdir="/",
+            title="Select a File",
+            filetypes=(("Json files", "*.json"), ("all files", "*.*"))
         )
         if filepath:
             self.config_file_path.set(filepath)
-            self.load_config()
 
     def load_config(self):
         try:
             with open(self.config_file_path.get(), 'r') as f:
-                self.config = json.load(f)
+                self.config_data = json.load(f)
             self.update_ui_from_config()
+            self.isLoadConfig = True
         except FileNotFoundError:
             messagebox.showerror("Error", "配置文件未找到")
         except json.JSONDecodeError:
             messagebox.showerror("Error", "配置文件格式错误")
+        except Exception as e:
+            messagebox.showerror("Error", f"加载配置文件出错: {e}")
 
     def save_config(self):
         if not self.validate_config():
@@ -219,84 +314,109 @@ class ConfigGUI:
             return
 
         self.update_config_from_ui()
+
         try:
-            with open(self.config_file_path.get(), 'w') as f:
-                json.dump(self.config, f, indent=4)
-            messagebox.showinfo("Success", "配置保存成功")
+            if self.isLoadConfig:
+                with open(self.config_file_path.get(), 'w') as f:
+                    json.dump(self.config_data, f, indent=4)
         except Exception as e:
             messagebox.showerror("Error", f"保存配置文件出错: {e}")
 
     def validate_config(self):
-        # 验证配置数据的逻辑
-        # ... (根据你的需求添加验证逻辑)
-        return True  # 这里暂时返回 True，表示验证通过
+        # ... 其他验证逻辑
+
+        # 验证屏幕分辨率
+        # try:
+        #     width = int(self.screen_width_var.get())
+        #     height = int(self.screen_height_var.get())
+        #     if width <= 0 or height <= 0:
+        #         return False
+        # except ValueError:
+        #     return False
+
+        # ... 其他验证逻辑
+
+        return True
 
     def update_config_from_ui(self):
-        # 基本配置
-        self.config["enable_realtime_configuration"] = self.enable_realtime_config_var.get()
-        try:
-            self.config["screen_resolution"] = [int(self.screen_width_var.get()), int(self.screen_height_var.get())]
-        except ValueError:
-            print("Error: Invalid screen resolution")
+        if self.isLoadConfig:
+            # 基本配置
+            self.config_data["enable_realtime_configuration"] = self.ui_vars["enable_realtime_configuration"].get()  # 获取 StringVar 的值
+            self.config_data["is_open_overlay"] = self.ui_vars["is_open_overlay"].get()  # 获取 StringVar 的值
+            self.config_data["is_open_screenshot_of_keystrokes"] = self.ui_vars["is_open_screenshot_of_keystrokes"].get()  # 获取 StringVar 的值
 
-        # 屏幕截图区域
-        for config_key in ["weapon_screenshot_area", "sight_screenshot_area",
-                           "muzzle_screenshot_area", "grip_screenshot_area",
-                           "butt_screenshot_area", "muzzle_screenshot_area2",
-                           "grip_screenshot_area2", "butt_screenshot_area2",
-                           "sight_screenshot_area2"]:
-            for key in ["left", "top", "width", "height"]:
-                var_name = config_key + "_" + key + "_var"
-                try:
-                    self.config[config_key][key] = int(self.config[var_name].get())
-                except ValueError:
-                    print(f"Error: Invalid value for {config_key}.{key}")
+            try:
+                self.config_data["screen_resolution"] = [
+                    int(self.ui_vars["screen_resolution"][0].get()),
+                    int(self.ui_vars["screen_resolution"][1].get())
+                ]
+            except ValueError:
+                print("Error: Invalid screen resolution")
+
+            # 屏幕截图区域
+            for config_key in ["weapon_screenshot_area", "sight_screenshot_area",
+                               "muzzle_screenshot_area", "grip_screenshot_area",
+                               "butt_screenshot_area", "muzzle_screenshot_area2",
+                               "grip_screenshot_area2", "butt_screenshot_area2",
+                               "sight_screenshot_area2"]:
+                for key in ["left", "top", "width", "height"]:
+                    try:
+                        self.config_data[config_key][key] = int(self.ui_vars[config_key][key].get())
+                    except ValueError:
+                        print(f"Error: Invalid value for {config_key}.{key}")
+            messagebox.showinfo("Success", "配置保存成功")
+        else:
+            messagebox.showerror("Error", "请先加载配置文件")
 
         # 武器配置
-        for firearm_name, firearm_data in self.config["firearms"].items():
-            recognition_threshold_var = firearm_data.get("recognition_threshold_var")
-            if recognition_threshold_var:
-                try:
-                    firearm_data["recognition_confidence_threshold"] = float(recognition_threshold_var.get())
-                except ValueError:
-                    print(f"Error: Invalid recognition threshold for {firearm_name}")
+        for firearm_name, firearm_ui_vars in self.ui_vars["firearms"].items():
+            try:
+                self.config_data["firearms"][firearm_name]["recognition_confidence_threshold"] = \
+                    float(firearm_ui_vars["recognition_confidence_threshold"].get())
+            except ValueError:
+                print(f"Error: Invalid recognition threshold for {firearm_name}")
 
-            coefficient_list_vars = firearm_data.get("coefficient_list_vars")
-            if coefficient_list_vars:
-                try:
-                    firearm_data["coefficient_list"] = [float(var.get()) for var in coefficient_list_vars]
-                except ValueError:
-                    print(f"Error: Invalid coefficient list for {firearm_name}")
+            try:
+                self.config_data["firearms"][firearm_name]["coefficient_list"] = [
+                    float(firearm_ui_vars[f"coefficient_list_{i}"].get()) for i in range(4)
+                ]
+            except ValueError:
+                print(f"Error: Invalid coefficient list for {firearm_name}")
 
-        # 其他配置项
-        for config_key, config_value in self.config.items():
-            if config_key.endswith("_var"):
-                original_key = config_key[:-4]
-                if isinstance(self.config[original_key], bool):
-                    self.config[original_key] = self.config[config_key].get()
-                elif isinstance(self.config[original_key], (int, float)):
-                    try:
-                        self.config[original_key] = float(self.config[config_key].get())
-                    except ValueError:
-                        print(f"Error: Invalid value for {original_key}")
-                elif isinstance(self.config[original_key], list):
-                    try:
-                        self.config[original_key] = [int(x) for x in self.config[config_key].get().split(",")]
-                    except ValueError:
-                        print(f"Error: Invalid value for {original_key}")
-                elif isinstance(self.config[original_key], dict):
-                    try:
-                        self.config[original_key] = json.loads(self.config[config_key].get())
-                    except json.JSONDecodeError:
-                        print(f"Error: Invalid JSON format for {original_key}")
+        #
+        # # 其他配置项
+        # for config_key, config_value in self.config.items():
+        #     if config_key.endswith("_var"):
+        #         original_key = config_key[:-4]
+        #         if isinstance(self.config[original_key], bool):
+        #             self.config[original_key] = self.config[config_key].get()
+        #         elif isinstance(self.config[original_key], (int, float)):
+        #             try:
+        #                 self.config[original_key] = float(self.config[config_key].get())
+        #             except ValueError:
+        #                 print(f"Error: Invalid value for {original_key}")
+        #         elif isinstance(self.config[original_key], list):
+        #             try:
+        #                 self.config[original_key] = [int(x) for x in self.config[config_key].get().split(",")]
+        #             except ValueError:
+        #                 print(f"Error: Invalid value for {original_key}")
+        #         elif isinstance(self.config[original_key], dict):
+        #             try:
+        #                 self.config[original_key] = json.loads(self.config[config_key].get())
+        #             except json.JSONDecodeError:
+        #                 print(f"Error: Invalid JSON format for {original_key}")
 
     def update_ui_from_config(self):
         # 基本配置
-        if "enable_realtime_configuration" in self.config:
-            self.enable_realtime_config_var.set(self.config["enable_realtime_configuration"])
-        if "screen_resolution" in self.config:
-            self.screen_width_var.set(self.config["screen_resolution"][0])
-            self.screen_height_var.set(self.config["screen_resolution"][1])
+        if "enable_realtime_configuration" in self.config_data:
+            self.ui_vars["enable_realtime_configuration"].set(self.config_data["enable_realtime_configuration"])
+        if "is_open_overlay" in self.config_data:
+            self.ui_vars["is_open_overlay"].set(self.config_data["is_open_overlay"])
+        if "is_open_screenshot_of_keystrokes" in self.config_data:
+            self.ui_vars["is_open_screenshot_of_keystrokes"].set(self.config_data["is_open_screenshot_of_keystrokes"])
+        if "screen_resolution" in self.config_data:
+            self.ui_vars["screen_resolution"][0].set(self.config_data["screen_resolution"][0])
+            self.ui_vars["screen_resolution"][1].set(self.config_data["screen_resolution"][1])
 
         # 屏幕截图区域
         for config_key in ["weapon_screenshot_area", "sight_screenshot_area",
@@ -305,33 +425,183 @@ class ConfigGUI:
                            "grip_screenshot_area2", "butt_screenshot_area2",
                            "sight_screenshot_area2"]:
             for key in ["left", "top", "width", "height"]:
-                var_name = config_key + "_" + key + "_var"
-                if var_name in self.config:
-                    self.config[var_name].set(self.config[config_key][key])
+                self.ui_vars[config_key][key].set(str(self.config_data[config_key][key]))
 
         # 武器配置
-        for firearm_name, firearm_data in self.config.get("firearms", {}).items():
-            recognition_threshold_var = firearm_data.get("recognition_threshold_var")
-            if recognition_threshold_var:
-                recognition_threshold_var.set(firearm_data["recognition_confidence_threshold"])
+        for firearm_name, firearm_data in self.config_data["firearms"].items():
+            # 更新识别阈值
+            self.ui_vars["firearms"][firearm_name]["recognition_confidence_threshold"].set(
+                str(firearm_data["recognition_confidence_threshold"])
+            )
 
-            coefficient_list_vars = firearm_data.get("coefficient_list_vars")
-            if coefficient_list_vars:
-                for i, coef_var in enumerate(coefficient_list_vars):
-                    coef_var.set(firearm_data["coefficient_list"][i])
+            # 更新系数列表
+            for i in range(4):
+                self.ui_vars["firearms"][firearm_name][f"coefficient_list_{i}"].set(
+                    str(firearm_data["coefficient_list"][i])
+                )
 
-        # 其他配置项
-        for config_key, config_value in self.config.items():
-            if config_key.endswith("_var"):
-                original_key = config_key[:-4]
-                if isinstance(self.config[original_key], dict):
-                    self.config[config_key].set(json.dumps(self.config[original_key], indent=2))
-                else:
-                    self.config[config_key].set(self.config[original_key])
+        # # 其他配置项
+        # for config_key, config_value in self.config_data.items():
+        #     if config_key.endswith("_var"):
+        #         original_key = config_key[:-4]
+        #         if isinstance(self.config_data[original_key], dict):
+        #             self.config_data[config_key].set(json.dumps(self.config_data[original_key], indent=2))
+        #         else:
+        #             self.config_data[config_key].set(self.config_data[original_key])
+
+    def create_screenshot_tab(self):
+        screenshot_tab = ttk.Frame(self.notebook)
+        self.notebook.add(screenshot_tab, text="截图配置")
+
+        # 说明部分
+        instructions_frame = ttk.LabelFrame(screenshot_tab, text="使用说明")
+        instructions_frame.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+        instructions_text = """
+        本功能用于更新配件截图。
+    
+        1. 程序加载配置后，进入游戏，打开背包。
+        2. 确保本程序不遮挡背包右侧枪械放置区域。
+        3. 一、二号位携带四配件武器，如M4或ACE32。
+        4. 务必严格按照说明配置枪械，点击截图。
+        """
+        instructions_label = tk.Label(instructions_frame, text=instructions_text, justify=tk.LEFT, wraplength=500, anchor='w')  # 靠左对齐
+        instructions_label.pack(padx=10, pady=10)
+
+        # 按钮部分 - 使用 Canvas 和 Scrollbar 实现滚动
+        canvas = tk.Canvas(screenshot_tab)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)  # 填充并扩展
+
+        scrollbar = tk.Scrollbar(screenshot_tab, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+        # 绑定鼠标滚轮事件
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+        canvas.bind("<MouseWheel>", _on_mousewheel)
+
+        buttons_frame = tk.Frame(canvas)
+        canvas.create_window((0, 0), window=buttons_frame, anchor='nw')
+
+        def take_screenshot_dxgi(frame, region):
+            try:
+                result = frame[region['top']:region['top']+region['height'], region['left']:region['left']+region['width']]
+                return result
+            except Exception as e:
+                print(f"获取范围截图出现异常: {e}")
+
+        # 截图函数入口
+        def take_screenshot(button, button_text):
+            if self.isLoadConfig:
+                frame = self.camera.grab()
+                while frame is None:
+                    frame = self.camera.grab()
+                muzzle_screenshot = take_screenshot_dxgi(frame, self.ui_vars["muzzle_screenshot_area"])
+                grip_screenshot = take_screenshot_dxgi(frame, self.ui_vars["grip_screenshot_area"])
+                butt_screenshot = take_screenshot_dxgi(frame, self.ui_vars["butt_screenshot_area"])
+                sight_screenshot = take_screenshot_dxgi(frame, self.ui_vars["sight_screenshot_area"])
+                muzzle_screenshot_2 = take_screenshot_dxgi(frame, self.ui_vars["muzzle_screenshot_area2"])
+                grip_screenshot_2 = take_screenshot_dxgi(frame, self.ui_vars["grip_screenshot_area2"])
+                butt_screenshot_2 = take_screenshot_dxgi(frame, self.ui_vars["butt_screenshot_area2"])
+                sight_screenshot_2 = take_screenshot_dxgi(frame, self.ui_vars["sight_screenshot_area2"])
+
+                image_dir = os.path.join(os.path.dirname(__file__), "image")
+                # 创建目录（如果不存在）
+                os.makedirs(os.path.join(image_dir, "muzzles"), exist_ok=True)
+                os.makedirs(os.path.join(image_dir, "grips"), exist_ok=True)
+                os.makedirs(os.path.join(image_dir, "butt"), exist_ok=True)
+                os.makedirs(os.path.join(image_dir, "sight"), exist_ok=True)
+                os.makedirs(os.path.join(image_dir, "muzzles2"), exist_ok=True)
+                os.makedirs(os.path.join(image_dir, "grips2"), exist_ok=True)
+                os.makedirs(os.path.join(image_dir, "butt2"), exist_ok=True)
+                os.makedirs(os.path.join(image_dir, "sight2"), exist_ok=True)
+
+                if button_text == "点击保存截图1":
+                    cv2.imwrite(os.path.join(image_dir, "muzzles", "buchang.png"), muzzle_screenshot)
+                    cv2.imwrite(os.path.join(image_dir, "grips", "chuizhi.png"), grip_screenshot)
+                    cv2.imwrite(os.path.join(image_dir, "butt", "zhanshu.png"), butt_screenshot)
+                    cv2.imwrite(os.path.join(image_dir, "sight", "hongdian.png"), sight_screenshot)
+
+                    cv2.imwrite(os.path.join(image_dir, "muzzles2", "buchang.png"), muzzle_screenshot_2)
+                    cv2.imwrite(os.path.join(image_dir, "grips2", "chuizhi.png"), grip_screenshot_2)
+                    cv2.imwrite(os.path.join(image_dir, "butt2", "zhanshu.png"), butt_screenshot_2)
+                    cv2.imwrite(os.path.join(image_dir, "sight2", "hongdian.png"), sight_screenshot_2)
+                elif button_text == "点击保存截图2":
+                    cv2.imwrite(os.path.join(image_dir, "muzzles", "xiaoyan.png"), muzzle_screenshot)
+                    cv2.imwrite(os.path.join(image_dir, "grips", "banjie.png"), grip_screenshot)
+                    cv2.imwrite(os.path.join(image_dir, "butt", "zhongxing.png"), butt_screenshot)
+                    cv2.imwrite(os.path.join(image_dir, "sight", "quanxi.png"), sight_screenshot)
+
+                    cv2.imwrite(os.path.join(image_dir, "muzzles2", "xiaoyan.png"), muzzle_screenshot_2)
+                    cv2.imwrite(os.path.join(image_dir, "grips2", "banjie.png"), grip_screenshot_2)
+                    cv2.imwrite(os.path.join(image_dir, "butt2", "zhongxing.png"), butt_screenshot_2)
+                    cv2.imwrite(os.path.join(image_dir, "sight2", "quanxi.png"), sight_screenshot_2)
+                elif button_text == "点击保存截图3":
+                    cv2.imwrite(os.path.join(image_dir, "muzzles", "zhitui.png"), muzzle_screenshot)
+                    cv2.imwrite(os.path.join(image_dir, "grips", "muzhi.png"), grip_screenshot)
+                    # 无枪托，不保存
+                    cv2.imwrite(os.path.join(image_dir, "sight", "two.png"), sight_screenshot)
+
+                    cv2.imwrite(os.path.join(image_dir, "muzzles2", "zhitui.png"), muzzle_screenshot_2)
+                    cv2.imwrite(os.path.join(image_dir, "grips2", "muzhi.png"), grip_screenshot_2)
+                    # 无枪托，不保存
+                    cv2.imwrite(os.path.join(image_dir, "sight2", "two.png"), sight_screenshot_2)
+                elif button_text == "点击保存截图4":
+                    # 无枪口，不保存
+                    cv2.imwrite(os.path.join(image_dir, "grips", "qingxing.png"), grip_screenshot)
+                    # 无枪托，不保存
+                    cv2.imwrite(os.path.join(image_dir, "sight", "three.png"), sight_screenshot)
+                    # 无枪口，不保存
+                    cv2.imwrite(os.path.join(image_dir, "grips2", "qingxing.png"), grip_screenshot_2)
+                    # 无枪托，不保存
+                    cv2.imwrite(os.path.join(image_dir, "sight2", "three.png"), sight_screenshot_2)
+                elif button_text == "点击保存截图5":
+                    # 无枪口，不保存
+                    # 无握把，不保存
+                    # 无枪托，不保存
+                    cv2.imwrite(os.path.join(image_dir, "sight", "four.png"), sight_screenshot)
+                    # 无枪口，不保存
+                    # 无握把，不保存
+                    # 无枪托，不保存
+                    cv2.imwrite(os.path.join(image_dir, "sight2", "four.png"), sight_screenshot_2)
+                button.config(bg="green")
+                messagebox.showinfo("成功",  "保存成功")
+            else:
+                messagebox.showerror("Error",  "请先加载配置")
+
+        def create_screenshot_row_template(parent_frame, instruction_text, button_text):
+            row_frame = tk.Frame(parent_frame)  # 为每一行创建一个框架
+            row_frame.pack(fill=tk.X, padx=5, pady=5)  # 水平填充，设置间距
+
+            instruction_label = tk.Label(row_frame, text=instruction_text, wraplength=500, justify=tk.LEFT)
+            instruction_label.pack(side=tk.LEFT, padx=5)
+
+            screenshot_button = tk.Button(row_frame, text=button_text, bg="white",
+                                          command=lambda: take_screenshot(screenshot_button, button_text))
+            screenshot_button.pack(side=tk.LEFT, padx=5)
+
+        # 示例：使用模板创建截图行
+        create_screenshot_row_template(buttons_frame, "一号武器：步枪补偿器 + 垂直握把 + 红点瞄准镜 + 战术枪托\n"
+                                                      "二号武器：步枪补偿器 + 垂直握把 + 红点瞄准镜 + 战术枪托", "点击保存截图1")
+
+        create_screenshot_row_template(buttons_frame, "一号武器：步枪消焰器 + 半截式握把 + 全息瞄准镜 + 重型枪托\n"
+                                                      "二号武器：步枪消焰器 + 半截式握把 + 全息瞄准镜 + 重型枪托", "点击保存截图2")
+
+        create_screenshot_row_template(buttons_frame, "一号武器：枪口制退器 + 拇指握把 + 二倍瞄准镜 + 无枪托\n"
+                                                      "二号武器：枪口制退器 + 拇指握把 + 二倍瞄准镜 + 无枪托", "点击保存截图3")
+
+        create_screenshot_row_template(buttons_frame, "一号武器：无枪口 + 轻型握把 + 三倍瞄准镜 + 无枪托\n"
+                                                      "二号武器：无枪口 + 轻型握把 + 三倍瞄准镜 + 无枪托", "点击保存截图4")
+
+        create_screenshot_row_template(buttons_frame, "一号武器：无枪口 + 无握把 + 四倍瞄准镜 + 无枪托\n"
+                                                      "二号武器：无枪口 + 无握把 + 四倍瞄准镜 + 无枪托", "点击保存截图5")
 
 
 if __name__ == '__main__':
     root = tk.Tk()
     app = ConfigGUI(root)
     root.mainloop()
-
