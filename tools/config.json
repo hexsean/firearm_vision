@@ -1,0 +1,311 @@
+{
+    "lua_config_path": "C:/Users/Public/Downloads/pubg_config.lua",
+    "enable_realtime_configuration": true,
+    "screen_resolution": [
+        3440,
+        1440
+    ],
+    "is_open_overlay": true,
+    "overlay_position": [
+        50,
+        300
+    ],
+    "is_open_screenshot_of_keystrokes": false,
+    "vertical_sensitivity_magnification": 1,
+    "weapon_screenshot_area": {
+        "left": 2740,
+        "top": 1260,
+        "width": 300,
+        "height": 150
+    },
+    "muzzle_screenshot_area": {
+        "left": 2240,
+        "top": 336,
+        "width": 22,
+        "height": 22
+    },
+    "grip_screenshot_area": {
+        "left": 2376,
+        "top": 336,
+        "width": 22,
+        "height": 22
+    },
+    "butt_screenshot_area": {
+        "left": 2804,
+        "top": 336,
+        "width": 22,
+        "height": 22
+    },
+    "sight_screenshot_area": {
+        "left": 2606,
+        "top": 174,
+        "width": 22,
+        "height": 22
+    },
+    "muzzle_screenshot_area2": {
+        "left": 2240,
+        "top": 638,
+        "width": 22,
+        "height": 22
+    },
+    "grip_screenshot_area2": {
+        "left": 2376,
+        "top": 638,
+        "width": 22,
+        "height": 22
+    },
+    "butt_screenshot_area2": {
+        "left": 2804,
+        "top": 638,
+        "width": 22,
+        "height": 22
+    },
+    "sight_screenshot_area2": {
+        "left": 2606,
+        "top": 476,
+        "width": 22,
+        "height": 22
+    },
+    "firearms": {
+        "akm": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "qbz": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "m762": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                0.78,
+                0.545
+            ]
+        },
+        "groza": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "scarl": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "m16a4": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "aug": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "m416": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "k2": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "g36c": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "mk47": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "ace32": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "ump": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "mp5k": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "vkt": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "p90": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "m249": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "dp28": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "mg3": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "famae": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                1,
+                1
+            ]
+        }
+    },
+    "index": {
+        "bullet": [
+            1670,
+            1336
+        ],
+        "backpack": [
+            2238,
+            144
+        ],
+        "energy_drink": [
+            1916,
+            1330,
+            6
+        ],
+        "antivirus_backpack": [
+            1445,
+            1397,
+            4
+        ],
+        "posture_2": [
+            1415,
+            1333
+        ],
+        "posture_3": [
+            1420,
+            1351
+        ]
+    },
+    "interval": {
+        "firearm_monitor_interval": 0.2,
+        "accessories_monitor_interval": 0.2,
+        "posture_monitor_interval": 0.05,
+        "coefficient_monitor_interval": 0.2,
+        "config_monitor_interval": 1
+    },
+    "firearms_accessories_list": {
+        "def_muzzle": 1.265,
+        "muzzle_list": {
+            "xiaoyan": 1.08,
+            "buchang": 1,
+            "zhitui": 1.08
+        },
+        "grip_list": {
+            "banjie": 0.805,
+            "qingxing": 0.86,
+            "chuizhi": 0.76,
+            "muzhi": 0.76
+        },
+        "butt_list": {
+            "zhongxing": 0.79,
+            "zhanshu": 0.98
+        },
+        "sight_list": {
+            "hongdian": 1,
+            "quanxi": 1,
+            "two": 1.62,
+            "three": 5.8,
+            "four": 5.8
+        }
+    }
+}
