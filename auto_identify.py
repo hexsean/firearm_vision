@@ -64,7 +64,7 @@ last_sight_name2 = 'None'
 # 姿势状态: 1-站立, 2-蹲下, 3-趴下
 posture_state = 1
 
-last_frame = None
+# last_frame = None
 # =========================================>> tool函数初始化 <<============================================
 
 
@@ -94,7 +94,13 @@ def calculate_recoil_coefficient():
         firearm_coefficient = 1  # 如果键不存在，则使用默认值1
 
     # 计算总系数
-    return round(screen_coefficient * vertical_coefficient * muzzle_coefficient * grip_coefficient * butt_coefficient * sight_coefficient * firearm_coefficient, 4)
+    return round(screen_coefficient
+                 * vertical_coefficient
+                 * muzzle_coefficient
+                 * grip_coefficient
+                 * butt_coefficient
+                 * sight_coefficient
+                 * firearm_coefficient, 4)
 
 
 # 加载模板(从image目录下加载枪械模板)
@@ -114,15 +120,20 @@ def take_screenshot_mss(region):
 
 
 # 使用dxgi截取指定区域的屏幕bgr
-def take_screenshot_dxgi(region):
-    global last_frame
+def take_screenshot_dxgi(camera1, region):
+    # global last_frame
     try:
         # start_time = time.perf_counter()  # 开始计时
-        result = last_frame[region['top']:region['top']+region['height'], region['left']:region['left']+region['width']]
+        # result = last_frame[region['top']:region['top']+region['height'], region['left']:region['left']+region['width']]
         # end_time = time.perf_counter()  # 结束计时
         # elapsed_time = (end_time - start_time) * 1000  # 计算耗时（毫秒）
         # print(f"切片耗时: {elapsed_time:.2f} ms")
-        return result
+        # dxcam的region格式是 (left, top, right, bottom)
+        # return result
+
+        left, top = region['left'], region['top']
+        right, bottom = left + region['width'], top + region['height']
+        return camera1.grab((left, top, right, bottom))
     except Exception as e:
         print(f"获取范围截图出现异常: {e}")
         return image2bgr(take_screenshot_mss(region))
@@ -152,11 +163,18 @@ def match_image(screenshot, template):
 
 
 # 获取指定坐标的颜色信息
-def get_pixel_color(x, y):
-    global last_frame
+def get_pixel_color(camera1, x, y):
+    # global last_frame
     try:
-        b, g, r = last_frame[y, x, :]
-        return int(r), int(g), int(b)
+        # b, g, r = last_frame[y, x, :]
+        # return int(r), int(g), int(b)
+
+        frame = camera.grab((x, y, x + 1, y + 1))
+        if frame is not None:
+            b, g, r = frame[0, 0]
+            return int(r), int(g), int(b)
+        else:
+            raise Exception("dxcam grab failed")
     except Exception as e:
         print(f"获取坐标颜色出现异常, 坐标地址x:{x}, y:{y}, e: {e}")
         with mss.mss() as sct:
@@ -170,33 +188,33 @@ def get_pixel_color(x, y):
 
 
 # 判断是否佩戴全自动或半自动武器
-def is_wear_fully_automatic_rifle():
+def is_wear_fully_automatic_rifle(camera1):
     # y = 1341
     y = config.bullet_index[1]
 
     # 判断是否打能量饮料
-    color1 = get_pixel_color(config.energy_drink_index[0], config.energy_drink_index[1])
+    color1 = get_pixel_color(camera1, config.energy_drink_index[0], config.energy_drink_index[1])
     r, g, b = color1
     # 加速图标亮起, 认为此时打了能量, 上移能量条的高度
     if r > 200 and g > 200 and b > 200:
         y = y - config.energy_drink_index[2]
 
     # 判断是否防毒背包
-    color1 = get_pixel_color(config.antivirus_backpack_index[0], config.antivirus_backpack_index[1])
+    color1 = get_pixel_color(camera1, config.antivirus_backpack_index[0], config.antivirus_backpack_index[1])
     r, g, b = color1
     # 有防毒条认为佩戴防毒背包, 上移防毒条的高度
     if 5 <= r <= 9 and 158 <= g <= 162 and 245 <= b <= 249:
         y = y - config.antivirus_backpack_index[2]
 
     # 根据第2颗子弹是否亮起判断是否佩戴全自动或半自动武器
-    color = get_pixel_color(config.bullet_index[0], y)
+    color = get_pixel_color(camera1, config.bullet_index[0], y)
     r, g, b = color
     return r > 200 and g > 200 and b > 200
 
 
 # 判断是否打开背包
-def is_open_backpack():
-    color = get_pixel_color(config.backpack_index[0], config.backpack_index[1])
+def is_open_backpack(camera1):
+    color = get_pixel_color(camera1, config.backpack_index[0], config.backpack_index[1])
     r, g, b = color
     return r > 250 and g > 250 and b > 250
 
@@ -218,18 +236,19 @@ def update_weapon_and_coefficient():
 
 
 # 监控当前武器
-def firearm_monitor(templates, overlay_model):
+def firearm_monitor(templates, overlay_model, camera1):
     global last_weapon_name, last_weapon_no
 
     while True:
         start_time = time.time()
-        screenshot = adaptive_threshold(cv2.cvtColor(take_screenshot_dxgi(config.weapon_screenshot_area), cv2.COLOR_BGR2GRAY))
+        screenshot = adaptive_threshold(cv2.cvtColor(take_screenshot_dxgi(camera1, config.weapon_screenshot_area),
+                                                     cv2.COLOR_BGR2GRAY))
         match_found = False
 
         max_val_list = {}
         text_list = []
 
-        if is_wear_fully_automatic_rifle():
+        if is_wear_fully_automatic_rifle(camera1):
             for name, template in templates.items():
                 max_val, max_loc = match_image(screenshot, template)
 
@@ -244,7 +263,7 @@ def firearm_monitor(templates, overlay_model):
                 name = max(max_val_list, key=lambda x: max_val_list[x][0])
 
                 # 判断图片位置
-                if max_val_list[name][1][1] > 75:
+                if max_val_list[name][1][1] > config.weapon_altitude:
                     no = 1
                 else:
                     no = 2
@@ -254,7 +273,8 @@ def firearm_monitor(templates, overlay_model):
                     last_weapon_name = name
                     last_weapon_no = no
                     update_weapon_and_coefficient()
-                    str_msg = f"耗时: {(time.time() - start_time) * 1000:.2f} ms, 更新时相似度: {max_val_list.get(name)} 当前{no}号位使用武器: {name}"
+                    str_msg = (f"耗时: {(time.time() - start_time) * 1000:.2f} ms, 更新时相似度: {max_val_list.get(name)} "
+                               f"当前{no}号位使用武器: {name}")
                     print(str_msg)
 
                     if overlay_model is not None:
@@ -301,24 +321,24 @@ def calculate_final_fittings(max_val_list):
 # 监控当前武器配件
 def accessories_monitor(grips_template_list, muzzles_template_list, butt_template_list, sight_template_list,
                         grips_template_list2, muzzles_template_list2, butt_template_list2, sight_template_list2,
-                        overlay_model):
+                        overlay_model, camera1):
 
     global last_muzzle_name, last_grip_name, last_butt_name, last_sight_name
     global last_muzzle_name2, last_grip_name2, last_butt_name2, last_sight_name2
 
     while True:
         start_time = time.time()
-        if is_open_backpack():
+        if is_open_backpack(camera1):
 
-            screenshot_muzzles = cv2.cvtColor(take_screenshot_dxgi(config.muzzle_screenshot_area), cv2.COLOR_BGR2GRAY)
-            screenshot_grips = cv2.cvtColor(take_screenshot_dxgi(config.grip_screenshot_area), cv2.COLOR_BGR2GRAY)
-            screenshot_butt = cv2.cvtColor(take_screenshot_dxgi(config.butt_screenshot_area), cv2.COLOR_BGR2GRAY)
-            screenshot_sight = cv2.cvtColor(take_screenshot_dxgi(config.sight_screenshot_area), cv2.COLOR_BGR2GRAY)
+            screenshot_muzzles = cv2.cvtColor(take_screenshot_dxgi(camera1, config.muzzle_screenshot_area), cv2.COLOR_BGR2GRAY)
+            screenshot_grips = cv2.cvtColor(take_screenshot_dxgi(camera1, config.grip_screenshot_area), cv2.COLOR_BGR2GRAY)
+            screenshot_butt = cv2.cvtColor(take_screenshot_dxgi(camera1, config.butt_screenshot_area), cv2.COLOR_BGR2GRAY)
+            screenshot_sight = cv2.cvtColor(take_screenshot_dxgi(camera1, config.sight_screenshot_area), cv2.COLOR_BGR2GRAY)
 
-            screenshot_muzzles2 = cv2.cvtColor(take_screenshot_dxgi(config.muzzle_screenshot_area2), cv2.COLOR_BGR2GRAY)
-            screenshot_grips2 = cv2.cvtColor(take_screenshot_dxgi(config.grip_screenshot_area2), cv2.COLOR_BGR2GRAY)
-            screenshot_butt2 = cv2.cvtColor(take_screenshot_dxgi(config.butt_screenshot_area2), cv2.COLOR_BGR2GRAY)
-            screenshot_sight2 = cv2.cvtColor(take_screenshot_dxgi(config.sight_screenshot_area2), cv2.COLOR_BGR2GRAY)
+            screenshot_muzzles2 = cv2.cvtColor(take_screenshot_dxgi(camera1, config.muzzle_screenshot_area2), cv2.COLOR_BGR2GRAY)
+            screenshot_grips2 = cv2.cvtColor(take_screenshot_dxgi(camera1, config.grip_screenshot_area2), cv2.COLOR_BGR2GRAY)
+            screenshot_butt2 = cv2.cvtColor(take_screenshot_dxgi(camera1, config.butt_screenshot_area2), cv2.COLOR_BGR2GRAY)
+            screenshot_sight2 = cv2.cvtColor(take_screenshot_dxgi(camera1, config.sight_screenshot_area2), cv2.COLOR_BGR2GRAY)
 
             # 1号位
             # 循环枪口
@@ -382,15 +402,16 @@ def accessories_monitor(grips_template_list, muzzles_template_list, butt_templat
         time.sleep(config.accessories_monitor_interval)
 
 
-def posture_monitor():
+def posture_monitor(camera1):
     global posture_state
+
     while True:
-        color1 = get_pixel_color(config.posture_2_index[0], config.posture_2_index[1])
+        color1 = get_pixel_color(camera1, config.posture_2_index[0], config.posture_2_index[1])
         r, g, b = color1
         if r > 200 and g > 200 and b > 200:
             posture = 2
         else:
-            color2 = get_pixel_color(config.posture_3_index[0], config.posture_3_index[1])
+            color2 = get_pixel_color(camera1, config.posture_3_index[0], config.posture_3_index[1])
             r2, g2, b2 = color2
             if r2 > 200 and g2 > 200 and b2 > 200:
                 posture = 3
@@ -546,8 +567,7 @@ def verify_activation_code():
         else:
             print("> 请输入激活码")
             exit_application()
-
-    except Exception as e:
+    except Exception:
         print("> 激活码无效")
         exit_application()
 
@@ -566,30 +586,28 @@ def realtime_config_monitor():
         time.sleep(config.config_monitor_interval)
 
 
-def signal_handler(sig, frame):
-    print("正在关闭程序...")
-
-
 # dxgi截图线程
-def dxgi_screenshot():
-    global last_frame
-    camera = dxcam.create(output_color="BGR")
-    target_sleep_ms = 20  # 目标休眠时间，单位为毫秒
-
-    while True:
-        start_time = time.perf_counter()  # 记录开始时间
-
-        try:
-            frame = camera.grab()
-            if frame is not None:
-                last_frame = frame
-        except Exception as e:
-            print(f"截图出现异常: {e}")
-
-        elapsed_ms = (time.perf_counter() - start_time) * 1000  # 计算运行时间，单位为毫秒
-        actual_sleep_ms = max(0, int(target_sleep_ms - elapsed_ms))  # 计算实际休眠时间
-
-        time.sleep(actual_sleep_ms / 1000)  # 执行休眠
+# def dxgi_screenshot(ready_event):
+#     global last_frame
+#     camera = dxcam.create(output_color="BGR")
+#     target_sleep_ms = 20  # 目标休眠时间，单位为毫秒
+#
+#     while True:
+#         start_time = time.perf_counter()  # 记录开始时间
+#
+#         try:
+#             frame = camera.grab()
+#             if frame is not None:
+#                 last_frame = frame
+#                 if not ready_event.is_set():
+#                     ready_event.set()
+#         except Exception as e:
+#             print(f"截图出现异常: {e}")
+#
+#         elapsed_ms = (time.perf_counter() - start_time) * 1000  # 计算运行时间，单位为毫秒
+#         actual_sleep_ms = max(0, int(target_sleep_ms - elapsed_ms))  # 计算实际休眠时间
+#
+#         time.sleep(actual_sleep_ms / 1000)  # 执行休眠
 
 
 if __name__ == "__main__":
@@ -601,6 +619,8 @@ if __name__ == "__main__":
     # 验证激活码
     print("> 当前程序运行中,请保持窗口开启 ")
     print("> ")
+    # 创建一个用于同步的Event对象
+    screenshot_ready_event = threading.Event()
 
     # 设置按键监听器
     if config.is_open_screenshot_of_keystrokes:
@@ -612,7 +632,9 @@ if __name__ == "__main__":
         # 创建监控窗口
         overlay = TextOverlay(tk.Tk(), config.overlay_position[0], config.overlay_position[1])
         # 启动监控线程
-        coefficient_thread = threading.Thread(target=coefficient_monitor, daemon=True, args=(overlay, config.coefficient_monitor_interval))
+        coefficient_thread = threading.Thread(target=coefficient_monitor,
+                                              daemon=True,
+                                              args=(overlay, config.coefficient_monitor_interval))
         coefficient_thread.start()
         print("> 计算系数监控中...")
 
@@ -625,12 +647,15 @@ if __name__ == "__main__":
     # 重置枪械, 姿势, 和配件
     reset_all()
 
+    # 初始化截图工具
+    camera = dxcam.create(output_color="BGR")
+
     # 启动截图线程
-    screenshot_thread = threading.Thread(target=dxgi_screenshot, daemon=True)
-    screenshot_thread.start()
+    # screenshot_thread = threading.Thread(target=dxgi_screenshot, daemon=True, args=(screenshot_ready_event,))
+    # screenshot_thread.start()
 
     # 启动监控姿势
-    posture_thread = threading.Thread(target=posture_monitor, daemon=True)
+    posture_thread = threading.Thread(target=posture_monitor, daemon=True, args=(camera,))
     posture_thread.start()
     print("> 姿势监控中...")
 
@@ -648,7 +673,7 @@ if __name__ == "__main__":
     sight_templates2 = load_templates("sight2", config.sight_list)
 
     # # 启动枪械监控线程
-    firearm_thread = threading.Thread(target=firearm_monitor, daemon=True, args=(firearms_templates, overlay))
+    firearm_thread = threading.Thread(target=firearm_monitor, daemon=True, args=(firearms_templates, overlay, camera))
     firearm_thread.start()
     print("> 枪械监控中...")
 
@@ -662,13 +687,12 @@ if __name__ == "__main__":
                                                 muzzles_templates2,
                                                 butt_templates2,
                                                 sight_templates2,
-                                                overlay))
+                                                overlay,
+                                                camera))
     accessories_thread.start()
     print("> 配件监控中...")
 
     # 处理退出程序
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
     stop_event = threading.Event()
 
     if config.is_open_overlay:
