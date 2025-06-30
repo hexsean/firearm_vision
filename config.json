@@ -1,11 +1,11 @@
 {
     "lua_config_path": "C:/Users/Public/Downloads/pubg_config.lua",
-    "enable_realtime_configuration": true,
+    "enable_realtime_configuration": false,
     "screen_resolution": [
         3440,
         1440
     ],
-    "is_open_overlay": true,
+    "is_open_overlay": false,
     "overlay_position": [
         50,
         300
@@ -269,8 +269,8 @@
             4
         ],
         "posture_2": [
-            1415,
-            1333
+            1409,
+            1335
         ],
         "posture_3": [
             1420,

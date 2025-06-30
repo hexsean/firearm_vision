@@ -10,7 +10,7 @@
         50,
         300
     ],
-    "is_open_screenshot_of_keystrokes": false,
+    "is_open_screenshot_of_keystrokes": true,
     "vertical_sensitivity_magnification": 1.0,
     "weapon_altitude": 75,
     "weapon_screenshot_area": {
@@ -269,7 +269,7 @@
             4
         ],
         "posture_2": [
-            1415,
+            1409,
             1333
         ],
         "posture_3": [
