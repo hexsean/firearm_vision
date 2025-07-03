@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUBG 后坐力补偿系数计算器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        .inputs-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+        .resolution-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        select {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: center;
+        }
+        input[type="number"]:focus, select:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        .resolution-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .calculate-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 15px;
+        }
+        .calculate-btn:hover {
+            background-color: #45a049;
+        }
+        .result {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .result h3 {
+            color: #333;
+            margin-top: 0;
+            font-size: 16px;
+        }
+        .coefficient {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4CAF50;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .usage {
+            background-color: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .error {
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .section-title {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 5px;
+        }
+        .fov-input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            .resolution-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PUBG 后坐力补偿系数计算器</h1>
+        
+        <div class="main-content">
+            <div class="inputs-section">
+                <div class="section-title">旧分辨率设定</div>
+                <div class="resolution-group">
+                    <div class="input-group">
+                        <label for="oldResolution">旧分辨率</label>
+                        <div class="resolution-input">
+                            <select id="oldResolution" onchange="updateResolution('old')">
+                                <option value="1920x1080">1920x1080 (FHD)</option>
+                                <option value="2560x1440">2560x1440 (2K)</option>
+                                <option value="3440x1440">3440x1440 (超宽2K)</option>
+                                <option value="2560x1080">2560x1080 (超宽FHD)</option>
+                                <option value="1680x1050">1680x1050</option>
+                                <option value="1440x900">1440x900</option>
+                                <option value="1366x768">1366x768</option>
+                                <option value="1280x1024">1280x1024</option>
+                                <option value="1280x720">1280x720 (HD)</option>
+                                <option value="custom">自定义</option>
+                            </select>
+                        </div>
+                        <div class="resolution-input">
+                            <input type="number" id="oldWidth" placeholder="宽" value="1920">
+                            <span>×</span>
+                            <input type="number" id="oldHeight" placeholder="高" value="1080">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title">新分辨率设定</div>
+                <div class="resolution-group">
+                    <div class="input-group">
+                        <label for="newResolution">新分辨率</label>
+                        <div class="resolution-input">
+                            <select id="newResolution" onchange="updateResolution('new')">
+                                <option value="2560x1440">2560x1440 (2K)</option>
+                                <option value="3440x1440">3440x1440 (超宽2K)</option>
+                                <option value="2560x1080">2560x1080 (超宽FHD)</option>
+                                <option value="1920x1080">1920x1080 (FHD)</option>
+                                <option value="1680x1050">1680x1050</option>
+                                <option value="1440x900">1440x900</option>
+                                <option value="1366x768">1366x768</option>
+                                <option value="1280x1024">1280x1024</option>
+                                <option value="1280x720">1280x720 (HD)</option>
+                                <option value="custom">自定义</option>
+                            </select>
+                        </div>
+                        <div class="resolution-input">
+                            <input type="number" id="newWidth" placeholder="宽" value="2560">
+                            <span>×</span>
+                            <input type="number" id="newHeight" placeholder="高" value="1440">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="fovSetting">游戏内FOV设定</label>
+                    <input type="number" id="fovSetting" class="fov-input" placeholder="例如: 90 或 103" value="90" step="0.1">
+                </div>
+
+                <button class="calculate-btn" onclick="calculateRecoilCoefficient()">计算系数</button>
+                <div id="error" class="error" style="display: none;"></div>
+            </div>
+
+            <div id="result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function updateResolution(type) {
+            const selectElement = document.getElementById(type + 'Resolution');
+            const widthInput = document.getElementById(type + 'Width');
+            const heightInput = document.getElementById(type + 'Height');
+            
+            if (selectElement.value === 'custom') {
+                return;
+            }
+            
+            const [width, height] = selectElement.value.split('x');
+            widthInput.value = width;
+            heightInput.value = height;
+        }
+        
+        function calculateRecoilCoefficient() {
+            const oldW = parseFloat(document.getElementById('oldWidth').value);
+            const oldH = parseFloat(document.getElementById('oldHeight').value);
+            const newW = parseFloat(document.getElementById('newWidth').value);
+            const newH = parseFloat(document.getElementById('newHeight').value);
+            const fovSetting = parseFloat(document.getElementById('fovSetting').value);
+            
+            const errorDiv = document.getElementById('error');
+            const resultDiv = document.getElementById('result');
+            
+            // 清除之前的错误和结果
+            errorDiv.style.display = 'none';
+            resultDiv.style.display = 'none';
+            
+            // 验证输入
+            if (isNaN(oldW) || isNaN(oldH) || isNaN(newW) || isNaN(newH) || isNaN(fovSetting)) {
+                showError('输入无效，请确保所有输入均为数字。');
+                return;
+            }
+            
+            if (oldW <= 0 || oldH <= 0 || newW <= 0 || newH <= 0 || fovSetting <= 0) {
+                showError('所有输入值必须为正数。');
+                return;
+            }
+            
+            // 核心计算逻辑
+            const resolutionFactor = newH / oldH;
+            const arOld = oldW / oldH;
+            const arNew = newW / newH;
+            
+            let fovFactor = 1.0;
+            let hfovOld = fovSetting;
+            let hfovNew = fovSetting;
+            
+            // 如果宽高比不变，则FOV系数为1
+            if (Math.abs(arOld - arNew) >= 0.001) {
+                const arRef = 16.0 / 9.0;
+                const hfovRefRad = fovSetting * Math.PI / 180;
+                const tanVfovHalf = Math.tan(hfovRefRad / 2) / arRef;
+                
+                const tanHfovOldHalf = arOld * tanVfovHalf;
+                const hfovOldRad = 2 * Math.atan(tanHfovOldHalf);
+                hfovOld = hfovOldRad * 180 / Math.PI;
+                
+                const tanHfovNewHalf = arNew * tanVfovHalf;
+                const hfovNewRad = 2 * Math.atan(tanHfovNewHalf);
+                hfovNew = hfovNewRad * 180 / Math.PI;
+                
+                if (hfovNew === 0) {
+                    showError('计算出的新HFOV为0，无法计算系数。');
+                    return;
+                }
+                fovFactor = hfovOld / hfovNew;
+            }
+            
+            const totalCoefficient = resolutionFactor * fovFactor;
+            
+            // 显示结果
+            showResult(oldW, oldH, newW, newH, arOld, arNew, hfovOld, hfovNew, totalCoefficient);
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        function showResult(oldW, oldH, newW, newH, arOld, arNew, hfovOld, hfovNew, totalCoefficient) {
+            const resultDiv = document.getElementById('result');
+            const examplePixels = (100 * totalCoefficient).toFixed(1);
+            
+            resultDiv.innerHTML = `
+                <h3>计算结果</h3>
+                <p><strong>旧分辨率:</strong> ${oldW}x${oldH} (宽高比: ${arOld.toFixed(2)}), 实际HFOV: ${hfovOld.toFixed(2)}°</p>
+                <p><strong>新分辨率:</strong> ${newW}x${newH} (宽高比: ${arNew.toFixed(2)}), 实际HFOV: ${hfovNew.toFixed(2)}°</p>
+                
+                <div class="coefficient">最终补偿系数: ${totalCoefficient.toFixed(4)}</div>
+                
+                <div class="usage">
+                    <h4>使用方法:</h4>
+                    <p><strong>【新】下压像素 = 【旧】下压像素 × ${totalCoefficient.toFixed(4)}</strong></p>
+                    <p>例如，如果旧设定下压100像素，新设定下应下压 ${examplePixels} 像素。</p>
+                </div>
+            `;
+            resultDiv.style.display = 'block';
+        }
+        
+        // 按Enter键计算
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                calculateRecoilCoefficient();
+            }
+        });
+        
+        // 监听输入框变化，自动设置下拉选择为自定义
+        ['oldWidth', 'oldHeight', 'newWidth', 'newHeight'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function() {
+                const type = id.startsWith('old') ? 'old' : 'new';
+                const selectElement = document.getElementById(type + 'Resolution');
+                const widthInput = document.getElementById(type + 'Width');
+                const heightInput = document.getElementById(type + 'Height');
+                
+                // 检查当前输入是否匹配预设分辨率
+                const currentResolution = widthInput.value + 'x' + heightInput.value;
+                let found = false;
+                
+                for (let option of selectElement.options) {
+                    if (option.value === currentResolution) {
+                        selectElement.value = currentResolution;
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found) {
+                    selectElement.value = 'custom';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
