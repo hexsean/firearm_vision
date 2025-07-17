@@ -671,17 +671,16 @@ if __name__ == "__main__":
     verify_activation_code()
 
     if config.is_debug:
+        manager = OverlayManager()
+        manager.start()
+        time.sleep(1)
+        manager.client.move(pos=config.overlay_position)
         print("> 调试模式已开启 ===> 仅用于调试,请勿在正式环境使用")
         # 截图监听
         # keyboard.Listener(on_press=on_press).start()
         # print("> 截图监听已启动")
         # 开始监控
-        print("> 当前程序运行中, 监控仪表盘已启动, 请保持窗口开启 ")
         print("> ")
-        manager = OverlayManager()
-        manager.start()
-        time.sleep(1)
-        manager.client.move(pos=(1920 - 450, 400))
         # 系数监听
         coefficient_thread = threading.Thread(target=coefficient_monitor,
                                               daemon=True,
