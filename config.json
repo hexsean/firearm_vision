@@ -1,68 +1,66 @@
 {
     "lua_config_path": "C:/Users/Public/Downloads/pubg_config.lua",
-    "enable_realtime_configuration": false,
     "screen_resolution": [
-        3440,
+        2560,
         1440
     ],
-    "is_open_overlay": false,
+    "is_debug": true,
     "overlay_position": [
         50,
         300
     ],
-    "is_open_screenshot_of_keystrokes": false,
-    "vertical_sensitivity_magnification": 1,
+    "vertical_sensitivity_magnification": 1.0,
     "weapon_altitude": 75,
     "weapon_screenshot_area": {
-        "left": 2740,
+        "left": 1860,
         "top": 1260,
         "width": 300,
         "height": 150
     },
     "muzzle_screenshot_area": {
-        "left": 2240,
+        "left": 1800,
         "top": 336,
         "width": 22,
         "height": 22
     },
     "grip_screenshot_area": {
-        "left": 2376,
+        "left": 1936,
         "top": 336,
         "width": 22,
         "height": 22
     },
     "butt_screenshot_area": {
-        "left": 2804,
+        "left": 2364,
         "top": 336,
         "width": 22,
         "height": 22
     },
     "sight_screenshot_area": {
-        "left": 2606,
+        "left": 2166,
         "top": 174,
         "width": 22,
         "height": 22
     },
     "muzzle_screenshot_area2": {
-        "left": 2240,
+        "left": 1800,
         "top": 638,
         "width": 22,
         "height": 22
     },
     "grip_screenshot_area2": {
-        "left": 2376,
+        "left": 1936,
         "top": 638,
         "width": 22,
         "height": 22
     },
     "butt_screenshot_area2": {
-        "left": 2804,
+        "left": 2364,
         "top": 638,
         "width": 22,
         "height": 22
     },
     "sight_screenshot_area2": {
-        "left": 2606,
+        "left": 2166,
         "top": 476,
         "width": 22,
         "height": 22
@@ -71,26 +69,26 @@
         "akm": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "qbz": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "m762": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
+                1.0,
+                1.0,
                 0.78,
                 0.545
             ]
@@ -98,182 +96,182 @@
         "groza": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "scarl": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "m16a4": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "aug": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "m416": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "k2": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "g36c": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "mk47": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "ace32": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "ump": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "mp5k": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "vkt": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "p90": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "m249": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "dp28": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "mg3": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         },
         "famae": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         }
     },
     "index": {
         "bullet": [
-            1670,
+            1230,
             1336
         ],
         "backpack": [
-            2238,
+            1798,
             144
         ],
         "energy_drink": [
-            1916,
+            1476,
             1330,
             6
         ],
         "antivirus_backpack": [
-            1445,
+            1036,
             1397,
             4
         ],
         "posture_2": [
-            1409,
-            1335
+            975,
+            1333
         ],
         "posture_3": [
-            1420,
+            980,
             1351
         ]
     },
@@ -281,8 +279,7 @@
         "firearm_monitor_interval": 0.2,
         "accessories_monitor_interval": 0.2,
         "posture_monitor_interval": 0.05,
-        "coefficient_monitor_interval": 0.2,
-        "config_monitor_interval": 1
+        "coefficient_monitor_interval": 0.2
     },
     "firearms_accessories_list": {
         "def_muzzle": 1.265,
@@ -292,13 +289,13 @@
             "zhitui": 1.08
         },
         "grip_list": {
-            "banjie": 0.805,
-            "qingxing": 0.86,
+            "banjie": 0.792,
+            "qingxing": 0.84,
             "chuizhi": 0.76,
             "muzhi": 0.76
         },
         "butt_list": {
-            "zhongxing": 0.79,
+            "zhongxing": 0.84,
             "zhanshu": 0.98
         },
         "sight_list": {

@@ -2,12 +2,8 @@ class UserConfiguration:
     def __init__(self, config):
         # 获取lua脚本读取的配置文件路径
         self.lua_config_path = config["lua_config_path"]
-        # 启用实时配置
-        self.enable_realtime_configuration = config["enable_realtime_configuration"]
-        # 是否开启监控
-        self.is_open_overlay = config["is_open_overlay"]
-        # 是否开启按键截图
-        self.is_open_screenshot_of_keystrokes = config["is_open_screenshot_of_keystrokes"]
+        # 是否开启Debug模式
+        self.is_debug = config["is_debug"]
         # 获取武器区分12高度
         self.weapon_altitude = config["weapon_altitude"]
         # 获取武器截图区域(left, top, width, height)
@@ -82,8 +78,6 @@ class UserConfiguration:
         self.posture_monitor_interval = config["interval"]["posture_monitor_interval"]
         # 系数监控间隔
         self.coefficient_monitor_interval = config["interval"]["coefficient_monitor_interval"]
-        # 配置监控间隔
-        self.config_monitor_interval = config["interval"]["config_monitor_interval"]
         # 解密私钥
         self.private_key = """
 -----BEGIN PRIVATE KEY-----
