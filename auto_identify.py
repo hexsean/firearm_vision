@@ -12,7 +12,6 @@ import os
 import json
 
 from pynput import keyboard
-import tkinter as tk
 
 from template_manager import TemplateManager
 from tools.ov_gui.overlay_manager import OverlayManager
@@ -318,9 +317,10 @@ def posture_monitor(frame, overlay_manager, overlay_name):
             posture = 1
     if posture_state != posture:
         posture_state = posture
-        print("更新姿势状态:", posture_state)
         if overlay_manager is not None:
-            overlay_manager.update(overlay_name, "posture_state")
+            print("更新姿势状态:", posture_state)
+            posture_str = "站立" if posture_state == 2 else "蹲下" if posture_state == 3 else "趴下"
+            overlay_manager.update(overlay_name, posture_str)
         update_weapon_and_coefficient()
 
 
@@ -648,15 +648,15 @@ def tart_monitoring(overlay_manager):
             # 是否开启背包
             if is_open_backpack(frame):
                 # 配件识别
-                firearm_accessories_monitor(frame, template, overlay_manager, "配件识别")
+                firearm_accessories_monitor(frame, template, overlay_manager, "枪械和配件识别")
                 if overlay_manager is not None:
-                    overlay_manager.update("背包状态:", "开启中")
+                    overlay_manager.update("背包状态:", "背包开启中")
             else:
                 # 姿势识别
                 posture_monitor(frame, overlay_manager, "姿势识别")
-                firearm_monitor(frame, template.firearms, overlay_manager, "枪械识别")
+                firearm_monitor(frame, template.firearms, overlay_manager, "枪械和配件识别")
                 if overlay_manager is not None:
-                    overlay_manager.update("背包状态:", "关闭")
+                    overlay_manager.update("背包状态:", "背包关闭")
             pass
 
         # 计算休眠时长控制循环速率
@@ -677,8 +677,8 @@ if __name__ == "__main__":
         manager.client.move(pos=config.overlay_position)
         print("> 调试模式已开启 ===> 仅用于调试,请勿在正式环境使用")
         # 截图监听
-        # keyboard.Listener(on_press=on_press).start()
-        # print("> 截图监听已启动")
+        keyboard.Listener(on_press=on_press).start()
+        print("> 截图监听已启动")
         # 开始监控
         print("> ")
         # 系数监听
