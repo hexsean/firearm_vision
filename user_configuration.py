@@ -78,6 +78,8 @@ class UserConfiguration:
         self.posture_monitor_interval = config["interval"]["posture_monitor_interval"]
         # 系数监控间隔
         self.coefficient_monitor_interval = config["interval"]["coefficient_monitor_interval"]
+        # 计算后的最小化区域
+        self.optimized_capture_region = None
         # 解密私钥
         self.private_key = """
 -----BEGIN PRIVATE KEY-----

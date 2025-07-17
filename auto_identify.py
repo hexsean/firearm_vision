@@ -89,9 +89,9 @@ def load_configuration():
 
     # 调用优化函数
     optimized_region, updated_config_data = prepare_optimized_capture_region(config_data)
-
-    # 【关键修改】返回两个值
-    return UserConfiguration(updated_config_data), optimized_region
+    config_vo = UserConfiguration(updated_config_data)
+    config_vo.optimized_capture_region = optimized_region
+    return config_vo
 
 
 def load_configuration1():
@@ -637,7 +637,7 @@ def tart_monitoring(overlay_manager):
     )
     # 初始化截图工具
     camera = dxcam.create(output_color="BGR")
-    camera.start(region=optimized_capture_region, target_fps=TARGET_FPS)
+    camera.start(region=config.optimized_capture_region, target_fps=TARGET_FPS)
     # 开始
     while camera.is_capturing:
         loop_start_time = time.perf_counter()
