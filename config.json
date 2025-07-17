@@ -6,8 +6,8 @@
     ],
     "is_debug": true,
     "overlay_position": [
-        50,
-        300
+        0,
+        0
     ],
     "vertical_sensitivity_magnification": 1.0,
     "weapon_altitude": 75,
@@ -262,23 +262,39 @@
             6
         ],
         "antivirus_backpack": [
-            1036,
+            1005,
             1397,
             4
         ],
-        "posture_2": [
+        "posture_21": [
             975,
             1333
         ],
-        "posture_3": [
+        "posture_22": [
+            953,
+            1333
+        ],
+        "posture_23": [
+            954,
+            1361
+        ],
+        "posture_31": [
             980,
             1351
+        ],
+        "posture_32": [
+            936,
+            1350
+        ],
+        "posture_33": [
+            963,
+            1355
         ]
     },
     "interval": {
-        "firearm_monitor_interval": 0.2,
+        "firearm_monitor_interval": 0.3,
         "accessories_monitor_interval": 0.2,
-        "posture_monitor_interval": 0.05,
+        "posture_monitor_interval": 0.1,
         "coefficient_monitor_interval": 0.2
     },
     "firearms_accessories_list": {

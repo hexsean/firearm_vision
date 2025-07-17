@@ -67,9 +67,13 @@ class UserConfiguration:
         # 毒包坐标
         self.antivirus_backpack_index = config["index"]["antivirus_backpack"]
         # 蹲姿坐标
-        self.posture_2_index = config["index"]["posture_2"]
+        self.posture_21_index = config["index"]["posture_21"]
+        self.posture_22_index = config["index"]["posture_22"]
+        self.posture_23_index = config["index"]["posture_23"]
         # 趴姿坐标
-        self.posture_3_index = config["index"]["posture_3"]
+        self.posture_31_index = config["index"]["posture_31"]
+        self.posture_32_index = config["index"]["posture_32"]
+        self.posture_33_index = config["index"]["posture_33"]
         # 枪械监控间隔
         self.firearm_monitor_interval = config["interval"]["firearm_monitor_interval"]
         # 配件监控间隔

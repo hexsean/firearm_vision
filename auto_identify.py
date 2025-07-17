@@ -99,8 +99,9 @@ def convert_to_relative_coordinates(config_dict, offset_x, offset_y):
                     value['top'] -= offset_y
                 else:  # 递归处理嵌套字典
                     convert_coords(value)
-            elif key in ['bullet', 'backpack', 'energy_drink', 'antivirus_backpack', 'posture_2',
-                         'posture_3'] and isinstance(value, list):
+            elif key in ['bullet', 'backpack', 'energy_drink', 'antivirus_backpack',
+                         'posture_21','posture_22','posture_23',
+                         'posture_31','posture_32','posture_33',] and isinstance(value, list):
                 # 转换点状坐标
                 value[0] -= offset_x
                 value[1] -= offset_y
@@ -348,14 +349,23 @@ def calculate_final_fittings(max_val_list):
 
 def posture_monitor(frame, overlay_manager, overlay_name):
     global posture_state
-    color1 = get_pixel_color1(frame, config.posture_2_index[0], config.posture_2_index[1])
-    r, g, b = color1
-    if r > 190 and g > 190 and b > 190:
+
+    color21 = get_pixel_color1(frame, config.posture_21_index[0], config.posture_21_index[1])
+    color22 = get_pixel_color1(frame, config.posture_22_index[0], config.posture_22_index[1])
+    color23 = get_pixel_color1(frame, config.posture_23_index[0], config.posture_23_index[1])
+    r21, g21, b21 = color21
+    r22, g22, b22 = color22
+    r23, g23, b23 = color23
+    if (r21 > 190 and g21 > 190 and b21 > 190) and (r22 > 190 and g22 > 190 and b22 > 190) and (r23 > 190 and g23 > 190 and b23 > 190):
         posture = 2
     else:
-        color2 = get_pixel_color1(frame, config.posture_3_index[0], config.posture_3_index[1])
-        r2, g2, b2 = color2
-        if r2 > 200 and g2 > 200 and b2 > 200:
+        color31 = get_pixel_color1(frame, config.posture_31_index[0], config.posture_31_index[1])
+        color32 = get_pixel_color1(frame, config.posture_32_index[0], config.posture_32_index[1])
+        color33 = get_pixel_color1(frame, config.posture_33_index[0], config.posture_33_index[1])
+        r31, g31, b31 = color31
+        r32, g32, b32 = color32
+        r33, g33, b33 = color33
+        if (r32 > 190 and g32 > 190 and b32 > 190) and (r31 > 190 and g31 > 190 and b31 > 190) and (r33 > 190 and g33 > 190 and b33 > 190):
             posture = 3
         else:
             posture = 1
@@ -363,7 +373,7 @@ def posture_monitor(frame, overlay_manager, overlay_name):
         posture_state = posture
         if overlay_manager is not None:
             print("更新姿势状态:", posture_state)
-            posture_str = "站立" if posture_state == 2 else "蹲下" if posture_state == 3 else "趴下"
+            posture_str = "站立" if posture_state == 1 else "蹲下" if posture_state == 2 else "趴下"
             overlay_manager.update(overlay_name, posture_str)
         update_weapon_and_coefficient()
 
@@ -541,6 +551,7 @@ def firearm_accessories_monitor(frame, template, overlay_manager, overlay_name):
     """
     global last_muzzle_name, last_grip_name, last_butt_name, last_sight_name
     global last_muzzle_name2, last_grip_name2, last_butt_name2, last_sight_name2
+    global last_weapon_name
     start_time = time.time()
     # 截图
     screenshot_muzzles = cv2.cvtColor(take_screenshot_dxgi(frame, config.muzzle_screenshot_area), cv2.COLOR_BGR2GRAY)
@@ -579,6 +590,9 @@ def firearm_accessories_monitor(frame, template, overlay_manager, overlay_name):
     last_grip_name2, grip_similarity2 = calculate_final_fittings(grip_max_val_list2)
     last_butt_name2, butt_similarity2 = calculate_final_fittings(butt_max_val_list2)
     last_sight_name2, sight_similarity2 = calculate_final_fittings(sight_max_val_list2)
+
+    if last_weapon_name != 'None':
+        last_weapon_name = 'None'
 
     # 更新系数
     update_weapon_and_coefficient()
@@ -632,7 +646,7 @@ def firearm_monitor(frame, template, overlay_manager, overlay_name):
                 last_weapon_name = name
                 last_weapon_no = no
                 update_weapon_and_coefficient()
-                str_msg = f"耗时: {(time.time() - start_time) * 1000:.2f} ms, 更新时相似度: {max_val_list.get(name)} 当前{no}号位使用武器: {name}"
+                str_msg = f"耗时: {(time.time() - start_time) * 1000:.2f} ms\n更新时相似度: {max_val_list.get(name)}\n当前{no}号位使用武器: {name}"
                 print(str_msg)
 
                 if overlay_manager is not None:
