@@ -23,14 +23,31 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
 
-# =========================================>> 加载动态配置 <<============================================
+# =========================================>> 配置加载和优化 <<============================================
 
-
-def prepare_optimized_capture_region(config_dict):
+def load_raw_configuration():
     """
-    根据配置计算最小截图范围，并转换所有坐标为相对坐标。
+    加载原始配置文件，不做任何处理。
+
+    Returns:
+        dict: 原始配置字典
+    """
+    with open('config.json', 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+
+def calculate_optimal_capture_region(config_dict):
+    """
+    根据配置计算最小截图范围。
+
+    Args:
+        config_dict (dict): 配置字典
+
+    Returns:
+        tuple: 优化后的捕获区域 (left, top, right, bottom)
     """
     regions = []
+
     # 1. 收集所有区域坐标
     for key, value in config_dict.items():
         if isinstance(value, dict) and 'left' in value:  # 区域性坐标
@@ -43,7 +60,7 @@ def prepare_optimized_capture_region(config_dict):
 
     if not regions:
         # 如果没有找到任何坐标，则返回全屏默认值
-        return (0, 0, config_dict['screen_resolution'][0], config_dict['screen_resolution'][1]), config_dict
+        return (0, 0, config_dict['screen_resolution'][0], config_dict['screen_resolution'][1])
 
     # 3. 计算最小包围盒
     min_x = min(r['left'] for r in regions)
@@ -58,49 +75,76 @@ def prepare_optimized_capture_region(config_dict):
     max_x += padding
     max_y += padding
 
-    # 4. 创建 dacxm 需要的区域元组 (left, top, right, bottom)
+    # 创建 dxcam 需要的区域元组 (left, top, right, bottom)
     capture_region = (min_x, min_y, max_x, max_y)
     print(f"> 优化启动：将从全屏 {config_dict['screen_resolution']} 优化为捕捉区域 {capture_region}")
 
-    # 5. 转换所有配置中的坐标为相对坐标
+    return capture_region
+
+
+def convert_to_relative_coordinates(config_dict, offset_x, offset_y):
+    """
+    将配置中的所有坐标转换为相对坐标。
+
+    Args:
+        config_dict (dict): 配置字典（会被直接修改）
+        offset_x (int): X轴偏移量
+        offset_y (int): Y轴偏移量
+    """
     def convert_coords(cfg):
         for key, value in cfg.items():
             if isinstance(value, dict):
                 if 'left' in value:  # 转换区域坐标
-                    value['left'] -= min_x
-                    value['top'] -= min_y
+                    value['left'] -= offset_x
+                    value['top'] -= offset_y
                 else:  # 递归处理嵌套字典
                     convert_coords(value)
             elif key in ['bullet', 'backpack', 'energy_drink', 'antivirus_backpack', 'posture_2',
                          'posture_3'] and isinstance(value, list):
                 # 转换点状坐标
-                value[0] -= min_x
-                value[1] -= min_y
+                value[0] -= offset_x
+                value[1] -= offset_y
 
     convert_coords(config_dict)
     print("> 所有配置坐标已转换为相对坐标。")
 
-    return capture_region, config_dict
 
+def load_optimized_configuration():
+    """
+    加载优化后的配置，包含相对坐标和优化的捕获区域。
 
-def load_configuration():
-    with open('config.json', 'r', encoding='utf-8') as f:
-        config_data = json.load(f)
+    Returns:
+        UserConfiguration: 包含优化捕获区域的配置对象
+    """
+    # 加载原始配置
+    config_data = load_raw_configuration()
 
-    # 调用优化函数
-    optimized_region, updated_config_data = prepare_optimized_capture_region(config_data)
-    config_vo = UserConfiguration(updated_config_data)
-    config_vo.optimized_capture_region = optimized_region
+    # 计算优化的捕获区域
+    capture_region = calculate_optimal_capture_region(config_data)
+
+    # 转换坐标为相对坐标
+    offset_x, offset_y = capture_region[0], capture_region[1]
+    convert_to_relative_coordinates(config_data, offset_x, offset_y)
+
+    # 创建配置对象并设置优化区域
+    config_vo = UserConfiguration(config_data)
+    config_vo.optimized_capture_region = capture_region
+
     return config_vo
 
 
-def load_configuration1():
-    with open('config.json', 'r', encoding='utf-8') as f:
-        config_data = json.load(f)
+def load_original_configuration():
+    """
+    加载原始配置，不做任何优化处理。
+
+    Returns:
+        UserConfiguration: 原始配置对象
+    """
+    config_data = load_raw_configuration()
     return UserConfiguration(config_data)
 
 
-config, optimized_capture_region = load_configuration()
+config = load_optimized_configuration()
 
 # =========================================>> 初始化静态配置 <<============================================
 TARGET_FPS = 15  # 主线程处理频率
@@ -340,7 +384,7 @@ def coefficient_monitor(overlay_manager, interval):
 def on_press(key):
     try:
         char = key.char.lower()
-        config1 = load_configuration1()
+        config1 = load_original_configuration()
         if char == 'k':
             print("> 正在截取屏幕...")
             dir_name = "screenshots"
