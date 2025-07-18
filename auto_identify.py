@@ -17,7 +17,7 @@ from pynput.keyboard import Key
 
 from template_manager import TemplateManager
 from tools.ov_gui.overlay_manager import OverlayManager
-from user_configuration import UserConfiguration
+from program_configuration import ProgramConfiguration
 import base64
 import re
 from cryptography.hazmat.primitives import serialization
@@ -33,6 +33,7 @@ def trigger_config_reload():
     print("> 收到配置重载请求, 将在当前循环结束后刷新...")
     RELOAD_CONFIG_EVENT.set()
 # =========================================>> 配置加载和优化 <<============================================
+
 
 def load_raw_configuration():
     """
@@ -123,7 +124,7 @@ def load_optimized_configuration():
     加载优化后的配置，包含相对坐标和优化的捕获区域。
 
     Returns:
-        UserConfiguration: 包含优化捕获区域的配置对象
+        ProgramConfiguration: 包含优化捕获区域的配置对象
     """
     # 加载原始配置
     config_data = load_raw_configuration()
@@ -136,7 +137,7 @@ def load_optimized_configuration():
     convert_to_relative_coordinates(config_data, offset_x, offset_y)
 
     # 创建配置对象并设置优化区域
-    config_vo = UserConfiguration(config_data)
+    config_vo = ProgramConfiguration(config_data)
     config_vo.optimized_capture_region = capture_region
 
     return config_vo
@@ -147,10 +148,10 @@ def load_original_configuration():
     加载原始配置，不做任何优化处理。
 
     Returns:
-        UserConfiguration: 原始配置对象
+        ProgramConfiguration: 原始配置对象
     """
     config_data = load_raw_configuration()
-    return UserConfiguration(config_data)
+    return ProgramConfiguration(config_data)
 
 
 # =========================================>> 初始化静态配置 <<============================================

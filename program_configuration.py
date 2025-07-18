@@ -1,4 +1,4 @@
-class UserConfiguration:
+class ProgramConfiguration:
     def __init__(self, config):
         # 获取lua脚本读取的配置文件路径
         self.lua_config_path = config["lua_config_path"]
