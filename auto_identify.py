@@ -710,8 +710,10 @@ def tart_monitoring(overlay_manager, config):
     frame_interval = 1.0 / target_fps
     # 初始化截图工具
     try:
-        camera = dxcam.create(output_color="BGR")
-        camera.start(region=config.optimized_capture_region, target_fps=target_fps)
+        # camera = dxcam.create(output_color="BGR")
+        # camera.start(region=config.optimized_capture_region, target_fps=target_fps)
+        camera = dxcam.create(region=config.optimized_capture_region, output_color="BGR")
+        camera.start(target_fps=target_fps)
     except Exception as e:
         print(f"> DXCAM 截图模块初始化失败: {e}")
         print("> 请确保您的系统支持 DirectX 11, 且没有其他程序独占屏幕.")
