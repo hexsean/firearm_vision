@@ -770,8 +770,8 @@ def main():
             print(f"> Web配置管理器启动失败: {e}")
 
         # 截图监听
-        keyboard.Listener(on_press=on_press).start()
-        print("> 截图监听已启动")
+        # keyboard.Listener(on_press=on_press).start()
+        # print("> 截图监听已启动")
         # 系数监听
         threading.Thread(target=coefficient_monitor, args=(manager.client, config.target_fps, config), daemon=True).start()
         print("> 系数仪表监听已启动")
