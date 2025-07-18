@@ -637,7 +637,7 @@ def firearm_monitor(frame, template, overlay_manager, overlay_name, config):
 
             # 常用队列统计相似度
             if overlay_manager is not None:
-                text_list.append(f"{name}相似度: {max_val}\n")
+                text_list.append(f"{name}相似度: {max_val:.2f}\n")
 
             if max_val >= config.weapon_recognition_confidence_threshold_list.get(name):
                 max_val_list[name] = max_val, max_loc
@@ -656,7 +656,7 @@ def firearm_monitor(frame, template, overlay_manager, overlay_name, config):
                 last_weapon_name = name
                 last_weapon_no = no
                 update_weapon_and_coefficient(config)
-                str_msg = f"耗时: {(time.time() - start_time) * 1000:.2f} ms\n更新时相似度: {max_val_list.get(name)}\n当前{no}号位使用武器: {name}"
+                str_msg = f"耗时: {(time.time() - start_time) * 1000:.2f} ms, {no}号位: {name} 相似度: {max_val_list.get(name):.2f}"
                 print(str_msg)
 
                 if overlay_manager is not None:
@@ -760,7 +760,7 @@ def main():
         manager.start()
         time.sleep(1)
         manager.client.move(pos=config.overlay_position)
-        print("> 调试模式已开启")
+        print("> =================================DEBUG MODEL====================================")
         # 截图监听
         keyboard.Listener(on_press=on_press).start()
         print("> 截图监听已启动")
