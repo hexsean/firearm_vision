@@ -100,8 +100,8 @@ def convert_to_relative_coordinates(config_dict, offset_x, offset_y):
                 else:  # 递归处理嵌套字典
                     convert_coords(value)
             elif key in ['bullet', 'backpack', 'energy_drink', 'antivirus_backpack',
-                         'posture_21','posture_22','posture_23',
-                         'posture_31','posture_32','posture_33',] and isinstance(value, list):
+                         'posture_21', 'posture_22', 'posture_23',
+                         'posture_31', 'posture_32', 'posture_33'] and isinstance(value, list):
                 # 转换点状坐标
                 value[0] -= offset_x
                 value[1] -= offset_y
@@ -145,12 +145,7 @@ def load_original_configuration():
     return UserConfiguration(config_data)
 
 
-config = load_optimized_configuration()
-
 # =========================================>> 初始化静态配置 <<============================================
-TARGET_FPS = 15  # 主线程处理频率
-FRAME_INTERVAL = 1.0 / TARGET_FPS
-
 update_last_weapon_name = None
 update_coefficient = 1
 # 当前佩戴的武器名称
@@ -183,7 +178,7 @@ posture_state = 1
 
 # =========================================>> tool函数初始化 <<============================================
 
-def calculate_recoil_coefficient():
+def calculate_recoil_coefficient(config):
     """
     计算后坐力系数(分辨率系数 * 垂直灵敏度系数 * 配件系数 * 姿势系数)
     """
@@ -281,7 +276,7 @@ def get_pixel_color1(frame1, x, y):
 
 
 # 判断是否佩戴全自动或半自动武器
-def is_wear_fully_automatic_rifle(frame1):
+def is_wear_fully_automatic_rifle(frame1, config):
     # y = 1341
     y = config.bullet_index[1]
 
@@ -306,17 +301,17 @@ def is_wear_fully_automatic_rifle(frame1):
 
 
 # 判断是否打开背包
-def is_open_backpack(frame):
+def is_open_backpack(frame, config):
     color = get_pixel_color1(frame, config.backpack_index[0], config.backpack_index[1])
     r, g, b = color
     return r > 250 and g > 250 and b > 250
 
 
 # 更新武器和后坐力系数
-def update_weapon_and_coefficient():
+def update_weapon_and_coefficient(config):
     global update_last_weapon_name
     global update_coefficient
-    coefficient = calculate_recoil_coefficient()
+    coefficient = calculate_recoil_coefficient(config)
     if update_last_weapon_name != last_weapon_name or update_coefficient != coefficient:
         update_last_weapon_name = last_weapon_name
         update_coefficient = coefficient
@@ -347,7 +342,7 @@ def calculate_final_fittings(max_val_list):
     return last_name, similarity
 
 
-def posture_monitor(frame, overlay_manager, overlay_name):
+def posture_monitor(frame, overlay_manager, overlay_name, config):
     global posture_state
 
     color21 = get_pixel_color1(frame, config.posture_21_index[0], config.posture_21_index[1])
@@ -375,11 +370,13 @@ def posture_monitor(frame, overlay_manager, overlay_name):
             print("更新姿势状态:", posture_state)
             posture_str = "站立" if posture_state == 1 else "蹲下" if posture_state == 2 else "趴下"
             overlay_manager.update(overlay_name, posture_str)
-        update_weapon_and_coefficient()
+        update_weapon_and_coefficient(config)
 
 
-def coefficient_monitor(overlay_manager, interval):
+def coefficient_monitor(overlay_manager, fps, config):
+    interval = 1.0 / fps
     while True:
+        loop_start_time = time.perf_counter()
         try:
             with open(config.lua_config_path, 'r', encoding='utf-8') as file:
                 lua_config = file.read()
@@ -387,7 +384,11 @@ def coefficient_monitor(overlay_manager, interval):
                 overlay_manager.update("系数监控", lua_config)
         except Exception as e:
             print(e)
-        time.sleep(interval)
+        # 计算休眠时长控制循环速率
+        elapsed = time.perf_counter() - loop_start_time
+        sleep_time = interval - elapsed
+        if sleep_time > 0:
+            time.sleep(sleep_time)
 
 
 # 按键监控截图
@@ -455,7 +456,7 @@ def on_press(key):
 # =========================================>> 线程初始化 <<============================================
 
 
-def reset_all():
+def reset_all(config):
     global last_weapon_name
     global last_weapon_no
     global last_muzzle_name
@@ -478,10 +479,10 @@ def reset_all():
     last_butt_name2 = 'None'
     last_sight_name2 = 'None'
     posture_state = 1
-    update_weapon_and_coefficient()
+    update_weapon_and_coefficient(config)
 
 
-def verify_activation_code():
+def verify_activation_code(config):
     """
     验证激活码
     """
@@ -541,7 +542,7 @@ def verify_activation_code():
         exit_application()
 
 
-def firearm_accessories_monitor(frame, template, overlay_manager, overlay_name):
+def firearm_accessories_monitor(frame, template, overlay_manager, overlay_name, config):
     """
     frame: 当前帧
     template: 模板管理器
@@ -595,7 +596,7 @@ def firearm_accessories_monitor(frame, template, overlay_manager, overlay_name):
         last_weapon_name = 'None'
 
     # 更新系数
-    update_weapon_and_coefficient()
+    update_weapon_and_coefficient(config)
 
     if overlay_manager is not None:
         text_list = [f"1号位当前使用枪口: {last_muzzle_name} 相似度: {muzzle_similarity:.2f}\n",
@@ -610,7 +611,7 @@ def firearm_accessories_monitor(frame, template, overlay_manager, overlay_name):
     pass
 
 
-def firearm_monitor(frame, template, overlay_manager, overlay_name):
+def firearm_monitor(frame, template, overlay_manager, overlay_name, config):
     global last_weapon_name, last_weapon_no
     start_time = time.time()
 
@@ -621,7 +622,7 @@ def firearm_monitor(frame, template, overlay_manager, overlay_name):
     max_val_list = {}
     text_list = []
 
-    if is_wear_fully_automatic_rifle(frame):
+    if is_wear_fully_automatic_rifle(frame, config):
         for name, template in template.items():
             max_val, max_loc = match_image(screenshot, template)
 
@@ -645,7 +646,7 @@ def firearm_monitor(frame, template, overlay_manager, overlay_name):
             if last_weapon_name != name or last_weapon_no != no:
                 last_weapon_name = name
                 last_weapon_no = no
-                update_weapon_and_coefficient()
+                update_weapon_and_coefficient(config)
                 str_msg = f"耗时: {(time.time() - start_time) * 1000:.2f} ms\n更新时相似度: {max_val_list.get(name)}\n当前{no}号位使用武器: {name}"
                 print(str_msg)
 
@@ -660,7 +661,7 @@ def firearm_monitor(frame, template, overlay_manager, overlay_name):
     # 未匹配到图片且当前状态不为N
     if not match_found and last_weapon_name != 'None':
         last_weapon_name = 'None'
-        update_weapon_and_coefficient()
+        update_weapon_and_coefficient(config)
         str_msg = f"耗时: {(time.time() - start_time) * 1000:.2f} ms, 未佩枪"
         print(str_msg)
         if overlay_manager is not None:
@@ -678,9 +679,9 @@ def firearm_monitor(frame, template, overlay_manager, overlay_name):
     #     overlay_manager.update(f"{overlay_name}-配件: ", " ".join(text_list))
 
 
-def tart_monitoring(overlay_manager):
+def tart_monitoring(overlay_manager, config):
     # 重置枪械, 姿势, 和配件
-    reset_all()
+    reset_all(config)
     # 加载模板
     template = TemplateManager(
         load_templates("firearms", config.firearm_list),
@@ -693,9 +694,12 @@ def tart_monitoring(overlay_manager):
         load_templates("butt2", config.butt_list),
         load_templates("sight2", config.sight_list)
     )
+    # 计算FPS
+    target_fps = config.target_fps
+    frame_interval = 1.0 / target_fps
     # 初始化截图工具
     camera = dxcam.create(output_color="BGR")
-    camera.start(region=config.optimized_capture_region, target_fps=TARGET_FPS)
+    camera.start(region=config.optimized_capture_region, target_fps=target_fps)
     # 开始
     while camera.is_capturing:
         loop_start_time = time.perf_counter()
@@ -704,29 +708,30 @@ def tart_monitoring(overlay_manager):
 
         if frame is not None:
             # 是否开启背包
-            if is_open_backpack(frame):
+            if is_open_backpack(frame, config):
                 # 配件识别
-                firearm_accessories_monitor(frame, template, overlay_manager, "枪械和配件识别")
+                firearm_accessories_monitor(frame, template, overlay_manager, "枪械和配件识别", config)
                 if overlay_manager is not None:
                     overlay_manager.update("背包状态:", "背包开启中")
             else:
                 # 姿势识别
-                posture_monitor(frame, overlay_manager, "姿势识别")
-                firearm_monitor(frame, template.firearms, overlay_manager, "枪械和配件识别")
+                posture_monitor(frame, overlay_manager, "姿势识别", config)
+                firearm_monitor(frame, template.firearms, overlay_manager, "枪械和配件识别", config)
                 if overlay_manager is not None:
                     overlay_manager.update("背包状态:", "背包关闭")
             pass
 
         # 计算休眠时长控制循环速率
         elapsed = time.perf_counter() - loop_start_time
-        sleep_time = FRAME_INTERVAL - elapsed
+        sleep_time = frame_interval - elapsed
         if sleep_time > 0:
             time.sleep(sleep_time)
 
 
-if __name__ == "__main__":
+def main():
+    config = load_optimized_configuration()
     print("> 验证程序中... ")
-    verify_activation_code()
+    verify_activation_code(config)
 
     if config.is_debug:
         manager = OverlayManager()
@@ -740,13 +745,15 @@ if __name__ == "__main__":
         # 开始监控
         print("> ")
         # 系数监听
-        coefficient_thread = threading.Thread(target=coefficient_monitor,
-                                              daemon=True,
-                                              args=(manager.client, config.coefficient_monitor_interval)).start()
+        threading.Thread(target=coefficient_monitor, args=(manager.client, config.target_fps, config)).start()
         print("> 计算系数监控中...")
-        tart_monitoring(manager.client)
+        tart_monitoring(manager.client, config)
     else:
         # 开始监控
         print("> 当前程序运行中,请保持窗口开启 ")
         print("> ")
-        tart_monitoring(None)
+        tart_monitoring(None, config)
+
+
+if __name__ == "__main__":
+    main()

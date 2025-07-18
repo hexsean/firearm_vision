@@ -28,6 +28,9 @@ class UserConfiguration:
         # 获取2号位武器配件=> 瞄准镜 =>截图区域(left, top, width, height)
         self.sight_screenshot_area2 = config["sight_screenshot_area2"]
 
+        # 帧率
+        self.target_fps = config["target_fps"]
+
         # 获取垂直灵敏度倍率
         self.vertical_sensitivity_magnification = config["vertical_sensitivity_magnification"]
         # 枪械列表
@@ -74,14 +77,6 @@ class UserConfiguration:
         self.posture_31_index = config["index"]["posture_31"]
         self.posture_32_index = config["index"]["posture_32"]
         self.posture_33_index = config["index"]["posture_33"]
-        # 枪械监控间隔
-        self.firearm_monitor_interval = config["interval"]["firearm_monitor_interval"]
-        # 配件监控间隔
-        self.accessories_monitor_interval = config["interval"]["accessories_monitor_interval"]
-        # 姿势监控间隔
-        self.posture_monitor_interval = config["interval"]["posture_monitor_interval"]
-        # 系数监控间隔
-        self.coefficient_monitor_interval = config["interval"]["coefficient_monitor_interval"]
         # 计算后的最小化区域
         self.optimized_capture_region = None
         # 解密私钥

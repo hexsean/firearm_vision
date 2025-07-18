@@ -10,6 +10,7 @@
         0
     ],
     "vertical_sensitivity_magnification": 1.0,
+    "target_fps": 15,
     "weapon_altitude": 75,
     "weapon_screenshot_area": {
         "left": 1860,
@@ -65,188 +66,6 @@
         "width": 22,
         "height": 22
     },
-    "firearms": {
-        "akm": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "qbz": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "m762": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                0.78,
-                0.545
-            ]
-        },
-        "groza": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "scarl": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "m16a4": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "aug": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "m416": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "k2": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "g36c": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "mk47": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "ace32": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "ump": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "mp5k": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "vkt": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "p90": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "m249": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "dp28": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "mg3": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        },
-        "famae": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ]
-        }
-    },
     "index": {
         "bullet": [
             1230,
@@ -291,11 +110,187 @@
             1355
         ]
     },
-    "interval": {
-        "firearm_monitor_interval": 0.3,
-        "accessories_monitor_interval": 0.2,
-        "posture_monitor_interval": 0.1,
-        "coefficient_monitor_interval": 0.2
+    "firearms": {
+        "akm": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "qbz": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "m762": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "groza": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "scarl": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "m16a4": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "aug": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "m416": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "k2": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "g36c": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "mk47": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "ace32": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "ump": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "mp5k": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "vkt": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "p90": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "m249": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "dp28": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "mg3": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        },
+        "famae": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1.0,
+                1.0,
+                0.78,
+                0.545
+            ]
+        }
     },
     "firearms_accessories_list": {
         "def_muzzle": 1.265,
