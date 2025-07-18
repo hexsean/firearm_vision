@@ -411,11 +411,11 @@ class ConfigManager {
         document.querySelectorAll('.index-coord').forEach(input => {
             const indexName = input.dataset.indexName;
             const coordIndex = parseInt(input.dataset.coordIndex);
-            
+
             if (!this.config.index[indexName]) {
                 this.config.index[indexName] = [];
             }
-            
+
             this.config.index[indexName][coordIndex] = parseInt(input.value) || 0;
         });
     }
@@ -443,7 +443,7 @@ class ConfigManager {
         const statusElement = document.getElementById('status');
         statusElement.textContent = message;
         statusElement.className = `status ${type}`;
-        
+
         if (type === 'success' || type === 'error') {
             setTimeout(() => {
                 statusElement.textContent = '';

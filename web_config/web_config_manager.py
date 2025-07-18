@@ -3,7 +3,7 @@ import threading
 import webbrowser
 from collections import OrderedDict
 from flask import Flask, render_template, request, jsonify
-from config_formatter import save_formatted_config
+from .config_formatter import save_formatted_config
 
 
 class WebConfigManager:

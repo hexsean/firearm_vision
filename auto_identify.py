@@ -23,7 +23,7 @@ import re
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
-from web_config_manager import start_web_config_manager, stop_web_config_manager
+from web_config import start_web_config_manager, stop_web_config_manager
 
 
 RELOAD_CONFIG_EVENT = threading.Event()
