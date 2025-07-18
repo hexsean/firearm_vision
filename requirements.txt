@@ -7,3 +7,4 @@ mss
 cryptography
 dxcam
 PyQt6
+Flask

@@ -23,6 +23,7 @@ import re
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
+from web_config_manager import start_web_config_manager, stop_web_config_manager
 
 
 RELOAD_CONFIG_EVENT = threading.Event()
@@ -762,23 +763,40 @@ def main():
         time.sleep(1)
         manager.client.move(pos=config.overlay_position)
         print("> =================================DEBUG MODEL====================================")
+
+        # 启动Web配置管理器
+        try:
+            start_web_config_manager('config.json', 5000, trigger_config_reload)
+            print("> Web配置管理器已启动")
+        except Exception as e:
+            print(f"> Web配置管理器启动失败: {e}")
+
         # 截图监听
         keyboard.Listener(on_press=on_press).start()
         print("> 截图监听已启动")
         # 系数监听
         threading.Thread(target=coefficient_monitor, args=(manager.client, config.target_fps, config), daemon=True).start()
         print("> 系数仪表监听已启动")
-        while not RELOAD_CONFIG_EVENT.is_set():
-            tart_monitoring(manager.client, config)
-            if RELOAD_CONFIG_EVENT.is_set():
-                config = load_optimized_configuration()
-                RELOAD_CONFIG_EVENT.clear()
-                print("> 配置已刷新, 正在重启监控...")
-            else:
-                if manager:
-                    manager.stop()
-                    print("> 程序已退出.")
-                break
+
+        try:
+            while not RELOAD_CONFIG_EVENT.is_set():
+                tart_monitoring(manager.client, config)
+                if RELOAD_CONFIG_EVENT.is_set():
+                    config = load_optimized_configuration()
+                    RELOAD_CONFIG_EVENT.clear()
+                    print("> 配置已刷新, 正在重启监控...")
+                else:
+                    if manager:
+                        manager.stop()
+                        print("> 程序已退出.")
+                    break
+        finally:
+            # 停止Web配置管理器
+            try:
+                stop_web_config_manager()
+                print("> Web配置管理器已停止")
+            except Exception as e:
+                print(f"> Web配置管理器停止失败: {e}")
     else:
         # 开始监控
         tart_monitoring(None, config)

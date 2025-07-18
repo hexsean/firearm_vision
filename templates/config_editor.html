@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firearm Vision - 配置管理</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Firearm Vision 配置管理</h1>
+            <div class="header-actions">
+                <button id="saveBtn" class="btn btn-primary">💾 保存配置</button>
+                <button id="reloadBtn" class="btn btn-secondary">🔄 重新加载</button>
+                <div class="status" id="status"></div>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-button active" data-tab="basic">基础设置</button>
+            <button class="tab-button" data-tab="screenshot">截图区域</button>
+            <button class="tab-button" data-tab="firearms">武器配置</button>
+            <button class="tab-button" data-tab="accessories">配件系数</button>
+            <button class="tab-button" data-tab="index">索引位置</button>
+        </div>
+
+        <!-- 基础设置 -->
+        <div class="tab-content active" id="basic">
+            <div class="section">
+                <h2>🔧 基础配置</h2>
+                <div class="form-group">
+                    <label for="lua_config_path">Lua配置文件路径:</label>
+                    <input type="text" id="lua_config_path" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="is_debug">调试模式:</label>
+                    <input type="checkbox" id="is_debug" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="target_fps">目标FPS:</label>
+                    <input type="number" id="target_fps" class="form-control" min="1" max="60">
+                </div>
+                <div class="form-group">
+                    <label for="weapon_altitude">武器高度:</label>
+                    <input type="number" id="weapon_altitude" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="vertical_sensitivity_magnification">垂直灵敏度倍率:</label>
+                    <input type="number" id="vertical_sensitivity_magnification" class="form-control" step="0.1">
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🖥️ 显示设置</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="screen_width">屏幕宽度:</label>
+                        <input type="number" id="screen_width" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="screen_height">屏幕高度:</label>
+                        <input type="number" id="screen_height" class="form-control">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="overlay_x">覆盖层X位置:</label>
+                        <input type="number" id="overlay_x" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="overlay_y">覆盖层Y位置:</label>
+                        <input type="number" id="overlay_y" class="form-control">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 截图区域 -->
+        <div class="tab-content" id="screenshot">
+            <div class="section">
+                <h2>📷 武器截图区域</h2>
+                <div class="area-config" data-area="weapon_screenshot_area">
+                    <h3>武器识别区域</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>左边距:</label>
+                            <input type="number" data-field="left" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>上边距:</label>
+                            <input type="number" data-field="top" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>宽度:</label>
+                            <input type="number" data-field="width" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>高度:</label>
+                            <input type="number" data-field="height" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔧 配件截图区域 (1号位武器)</h2>
+                <div class="accessories-grid">
+                    <div class="area-config" data-area="muzzle_screenshot_area">
+                        <h3>枪口</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>左:</label>
+                                <input type="number" data-field="left" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>上:</label>
+                                <input type="number" data-field="top" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>宽:</label>
+                                <input type="number" data-field="width" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>高:</label>
+                                <input type="number" data-field="height" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="area-config" data-area="grip_screenshot_area">
+                        <h3>握把</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>左:</label>
+                                <input type="number" data-field="left" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>上:</label>
+                                <input type="number" data-field="top" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>宽:</label>
+                                <input type="number" data-field="width" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>高:</label>
+                                <input type="number" data-field="height" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="area-config" data-area="butt_screenshot_area">
+                        <h3>枪托</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>左:</label>
+                                <input type="number" data-field="left" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>上:</label>
+                                <input type="number" data-field="top" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>宽:</label>
+                                <input type="number" data-field="width" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>高:</label>
+                                <input type="number" data-field="height" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="area-config" data-area="sight_screenshot_area">
+                        <h3>瞄具</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>左:</label>
+                                <input type="number" data-field="left" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>上:</label>
+                                <input type="number" data-field="top" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>宽:</label>
+                                <input type="number" data-field="width" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>高:</label>
+                                <input type="number" data-field="height" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔧 配件截图区域 (2号位武器)</h2>
+                <div class="accessories-grid">
+                    <div class="area-config" data-area="muzzle_screenshot_area2">
+                        <h3>枪口2</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>左:</label>
+                                <input type="number" data-field="left" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>上:</label>
+                                <input type="number" data-field="top" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>宽:</label>
+                                <input type="number" data-field="width" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>高:</label>
+                                <input type="number" data-field="height" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="area-config" data-area="grip_screenshot_area2">
+                        <h3>握把2</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>左:</label>
+                                <input type="number" data-field="left" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>上:</label>
+                                <input type="number" data-field="top" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>宽:</label>
+                                <input type="number" data-field="width" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>高:</label>
+                                <input type="number" data-field="height" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="area-config" data-area="butt_screenshot_area2">
+                        <h3>枪托2</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>左:</label>
+                                <input type="number" data-field="left" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>上:</label>
+                                <input type="number" data-field="top" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>宽:</label>
+                                <input type="number" data-field="width" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>高:</label>
+                                <input type="number" data-field="height" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="area-config" data-area="sight_screenshot_area2">
+                        <h3>瞄具2</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>左:</label>
+                                <input type="number" data-field="left" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>上:</label>
+                                <input type="number" data-field="top" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>宽:</label>
+                                <input type="number" data-field="width" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>高:</label>
+                                <input type="number" data-field="height" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 武器配置 -->
+        <div class="tab-content" id="firearms">
+            <div class="section">
+                <h2>🔫 武器配置</h2>
+                <div id="firearms-list" class="firearms-grid">
+                    <!-- 武器配置将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 配件系数 -->
+        <div class="tab-content" id="accessories">
+            <div class="section">
+                <h2>🔧 配件系数配置</h2>
+                <div id="accessories-config">
+                    <!-- 配件系数配置将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 索引位置 -->
+        <div class="tab-content" id="index">
+            <div class="section">
+                <h2>📍 索引位置配置</h2>
+                <div id="index-config">
+                    <!-- 索引位置配置将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
