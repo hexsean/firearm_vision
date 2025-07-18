@@ -296,7 +296,7 @@
         "def_muzzle": 1.265,
         "muzzle_list": {
             "xiaoyan": 1.08,
-            "buchang": 2,
+            "buchang": 1,
             "zhitui": 1.08
         },
         "grip_list": {
