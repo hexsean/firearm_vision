@@ -27,7 +27,7 @@ YCounter = 0
 -- 是否开启debug
 IsDebug = false
 -- 瞄准模式: 0-切换开镜, 1-长按开镜
-AimingModel = 1
+AimingModel = 0
 -- 循环延迟, 值越大循环的频率越低, 屏幕抖动越厉害
 CycleDelay = 3
 -- 识别程序输出的脚本文件路径
@@ -37,7 +37,7 @@ ConfigPath = "C:/Users/Public/Downloads/pubg_config.lua"
 
 Guns = {
     akm = {
-        ads = 100,
+        ads = 116,
         interval = 100,
         ballistics = {},
         recoilPattern = {
@@ -64,49 +64,87 @@ Guns = {
         }
     },
     qbz = {
-        ads = 100,
+        ads = 115,
         interval = 92,
         ballistics = {},
         recoilPattern = {
-            { 1, 22 },
-            { 4, 12 },
-            { 9, 14 },
-            { 14, 21 },
-            { 19, 22 },
-            { 39, 23 }
+            { 1, 23 },
+            { 2, 10 },
+            { 3, 14 },
+            { 4, 17 },
+            { 5, 15 },
+            { 6, 17 },
+            { 7, 18 },
+            { 8, 18 },
+            { 9, 19 },
+            { 10, 19 },
+            { 11, 19 },
+            { 12, 19 },
+            { 13, 20 },
+            { 14, 20 },
+            { 15, 20 },
+            { 16, 20 },
+            { 17, 20 },
+            { 18, 20 },
+            { 19, 20 },
+            { 20, 21 },
+            { 21, 20 },
+            { 22, 21 },
+            { 23, 23 },
+            { 24, 24 },
+            { 25, 25 },
+            { 26, 22 },
+            { 27, 26 },
+            { 28, 22 },
+            { 29, 23 },
+            { 30, 23 },
+            { 31, 23 },
+            { 32, 23 },
+            { 33, 23 },
+            { 34, 23 },
+            { 35, 23 },
+            { 36, 23 },
+            { 37, 23 },
+            { 38, 23 },
+            { 42, 23 }
         }
     },
     m762 = {
-        ads = 100,
+        ads = 116,
         interval = 86,
         ballistics = {},
         recoilPattern = {
             { 1, 26 },
             { 2, 17 },
             { 3, 18 },
-            { 4, 18 },
-            { 5, 22 },
+            { 4, 17 },
+            { 5, 23 },
             { 6, 23 },
-            { 7, 24 },
-            { 8, 24 },
+            { 7, 22 },
+            { 8, 23 },
             { 9, 24 },
             { 10, 24 },
-            { 11, 27 },
-            { 12, 29 },
+            { 11, 25 },
+            { 12, 25 },
             { 13, 29 },
             { 14, 28 },
-            { 15, 28 },
+            { 15, 26 },
             { 16, 28 },
             { 17, 30 },
             { 18, 28 },
             { 19, 33 },
+            { 20, 31 },
+            { 21, 31 },
+            { 22, 31 },
             { 26, 31 },
             { 32, 30 },
+            { 36, 32 },
+            { 38, 33 },
             { 42, 6 }
         }
     },
     groza = {
-        ads = 100,
+        ads = 115,
         interval = 80,
         ballistics = {},
         recoilPattern = {
@@ -152,7 +190,7 @@ Guns = {
         }
     },
     scarl = {
-        ads = 100,
+        ads = 115,
         interval = 92,
         ballistics = {},
         recoilPattern = {
@@ -177,7 +215,7 @@ Guns = {
         }
     },
     m16a4 = {
-        ads = 100,
+        ads = 115,
         interval = 86,
         ballistics = {},
         recoilPattern = {
@@ -223,7 +261,7 @@ Guns = {
         }
     },
     aug = {
-        ads = 100,
+        ads = 115,
         interval = 83,
         ballistics = {},
         recoilPattern = {
@@ -271,7 +309,7 @@ Guns = {
         }
     },
     m416 = {
-        ads = 100,
+        ads = 115,
         interval = 86,
         ballistics = {},
         recoilPattern = {
@@ -317,32 +355,40 @@ Guns = {
         }
     },
     k2 = {
-        ads = 100,
+        ads = 115,
         interval = 86,
         ballistics = {},
         recoilPattern = {
-            { 1, 37 },
-            { 2, 25 },
-            { 3, 32 },
-            { 4, 34 },
-            { 5, 37 },
-            { 6, 38 },
-            { 7, 42 },
-            { 8, 44 },
-            { 9, 44 },
-            { 10, 45 },
-            { 11, 47 },
-            { 12, 45 },
-            { 13, 49 },
-            { 14, 47 },
-            { 19, 55 },
-            { 26, 53 },
-            { 32, 50 },
-            { 42, 20 }
+            { 1, 23 },
+            { 2, 10 },
+            { 3, 14 },
+            { 4, 17 },
+            { 5, 15 },
+            { 6, 17 },
+            { 7, 18 },
+            { 8, 18 },
+            { 9, 19 },
+            { 10, 19 },
+            { 11, 19 },
+            { 12, 19 },
+            { 17, 20 },
+            { 18, 20 },
+            { 19, 20 },
+            { 20, 21 },
+            { 21, 20 },
+            { 22, 21 },
+            { 23, 23 },
+            { 24, 21 },
+            { 25, 21 },
+            { 26, 22 },
+            { 28, 22 },
+            { 34, 23 },
+            { 35, 22 },
+            { 42, 23 }
         }
     },
     g36c = {
-        ads = 100,
+        ads = 115,
         interval = 86,
         ballistics = {},
         recoilPattern = {
@@ -355,7 +401,7 @@ Guns = {
         }
     },
     mk47 = {
-        ads = 100,
+        ads = 115,
         interval = 90,
         ballistics = {},
         recoilPattern = {
@@ -367,7 +413,7 @@ Guns = {
         }
     },
     ace32 = {
-        ads = 100,
+        ads = 115,
         interval = 88,
         ballistics = {},
         recoilPattern = {
@@ -386,14 +432,14 @@ Guns = {
             { 13, 23 },
             { 14, 24 },
             { 19, 24 },
-            { 20, 27 },
+            { 20, 25 },
             { 30, 29 },
-            { 37, 31 },
+            { 37, 28 },
             { 42, 28 }
         }
     },
     ump = {
-        ads = 100,
+        ads = 27,
         interval = 90,
         ballistics = {},
         recoilPattern = {
@@ -418,7 +464,7 @@ Guns = {
         }
     },
     mp5k = {
-        ads = 100,
+        ads = 25,
         interval = 67,
         ballistics = {},
         recoilPattern = {
@@ -443,7 +489,7 @@ Guns = {
         }
     },
     vkt = {
-        ads = 100,
+        ads = 27,
         interval = 54,
         ballistics = {},
         recoilPattern = {
@@ -468,7 +514,7 @@ Guns = {
         }
     },
     p90 = {
-        ads = 100,
+        ads = 48,
         interval = 60,
         ballistics = {},
         recoilPattern = {
@@ -522,7 +568,7 @@ Guns = {
         }
     },
     m249 = {
-        ads = 100,
+        ads = 103,
         interval = 75,
         ballistics = {},
         recoilPattern = {
@@ -688,11 +734,11 @@ Guns = {
         }
     },
     dp28 = {
-        ads = 100,
+        ads = 80,
         interval = 109,
         ballistics = {},
         recoilPattern = {
-            { 1, 23 },
+            { 1, 20 },
             { 2, 12 },
             { 3, 14 },
             { 4, 20 },
@@ -742,7 +788,7 @@ Guns = {
         }
     },
     mg3 = {
-        ads = 100,
+        ads = 20,
         interval = 91,
         ballistics = {},
         recoilPattern = {
@@ -767,28 +813,18 @@ Guns = {
         }
     },
     famae = {
-        ads = 100,
+        ads = 115,
         interval = 67,
         ballistics = {},
         recoilPattern = {
-            { 1, 37 },
-            { 2, 25 },
-            { 3, 32 },
-            { 4, 34 },
-            { 5, 37 },
-            { 6, 38 },
-            { 7, 42 },
-            { 8, 44 },
-            { 9, 44 },
-            { 10, 45 },
-            { 11, 47 },
-            { 12, 45 },
-            { 13, 49 },
-            { 14, 47 },
-            { 19, 55 },
-            { 26, 53 },
-            { 32, 50 },
-            { 42, 20 }
+            { 1, 10 },
+            { 2, 10 },
+            { 7, 15 },
+            { 18, 18 },
+            { 32, 21 },
+            { 33, 21 },
+            { 36, 19 },
+            { 42, 21 }
         }
     }
 }
@@ -877,10 +913,10 @@ function ApplyRecoil(gunData, bulletIndex)
     local x = 0
     if IsDebug then
         x = math.ceil((ClickCurrentTime - ClickStartTime) / (gunData.interval * (bulletIndex)) * bulletIndex * 20) -
-            XCounter
+                XCounter
     end
     local y = math.ceil((ClickCurrentTime - ClickStartTime) / (gunData.interval * bulletIndex) *
-        gunData.ballistics[bulletIndex]) - YCounter
+            gunData.ballistics[bulletIndex]) - YCounter
     MoveMouseRelative(x, y)
     if IsDebug then
         OutputLogMessage("MoveMouseRelative ====> " .. "=== x: " .. x .. " === y: " .. y .. "\n")
@@ -933,11 +969,11 @@ function OnEvent(event, arg, family)
                         BulletIndex = math.ceil((ClickCurrentTime - ClickStartTime == 0 and 1 or (ClickCurrentTime - ClickStartTime) / gunData.interval))
                         if IsDebug then
                             OutputLogMessage("ApplyRecoil ====> " ..
-                                "BulletIndex: " ..
-                                BulletIndex ..
-                                " ClickCurrentTime: " ..
-                                ClickCurrentTime ..
-                                " ClickStartTime: " .. ClickStartTime .. " #gunData.ballistics: " .. count .. "\n")
+                                    "BulletIndex: " ..
+                                    BulletIndex ..
+                                    " ClickCurrentTime: " ..
+                                    ClickCurrentTime ..
+                                    " ClickStartTime: " .. ClickStartTime .. " #gunData.ballistics: " .. count .. "\n")
                         end
                         -- 当前子弹序号不能超过最大值
                         if BulletIndex > count then break end
@@ -956,11 +992,11 @@ function OnEvent(event, arg, family)
                         BulletIndex = math.ceil((ClickCurrentTime - ClickStartTime == 0 and 1 or (ClickCurrentTime - ClickStartTime) / gunData.interval))
                         if IsDebug then
                             OutputLogMessage("ApplyRecoil ====> " ..
-                                "BulletIndex: " ..
-                                BulletIndex ..
-                                " ClickCurrentTime: " ..
-                                ClickCurrentTime ..
-                                " ClickStartTime: " .. ClickStartTime .. " #gunData.ballistics: " .. count .. "\n")
+                                    "BulletIndex: " ..
+                                    BulletIndex ..
+                                    " ClickCurrentTime: " ..
+                                    ClickCurrentTime ..
+                                    " ClickStartTime: " .. ClickStartTime .. " #gunData.ballistics: " .. count .. "\n")
                         end
                         -- 当前子弹序号不能超过最大值
                         if BulletIndex > count then break end

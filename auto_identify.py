@@ -656,7 +656,7 @@ def firearm_monitor(frame, template, overlay_manager, overlay_name, config):
                 last_weapon_name = name
                 last_weapon_no = no
                 update_weapon_and_coefficient(config)
-                str_msg = f"耗时: {(time.time() - start_time) * 1000:.2f} ms, {no}号位: {name} 相似度: {max_val_list.get(name):.2f}"
+                str_msg = f"耗时: {(time.time() - start_time) * 1000:.2f} ms, {no}号位: {name} 相似度: {max_val_list.get(name)[0]:.2f}"
                 print(str_msg)
 
                 if overlay_manager is not None:
