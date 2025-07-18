@@ -764,7 +764,7 @@ def main():
 
         # 启动Web配置管理器
         try:
-            start_web_config_manager('config.json', 5000, trigger_config_reload)
+            start_web_config_manager('config.json', 18957, trigger_config_reload)
             print("> Web配置管理器已启动")
         except Exception as e:
             print(f"> Web配置管理器启动失败: {e}")

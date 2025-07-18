@@ -111,6 +111,24 @@
         ]
     },
     "firearms": {
+        "m762": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                0.78,
+                0.545
+            ]
+        },
+        "m416": {
+            "recognition_confidence_threshold": 0.4,
+            "coefficient_list": [
+                1,
+                1,
+                0.78,
+                0.545
+            ]
+        },
         "akm": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
@@ -121,15 +139,6 @@
             ]
         },
         "qbz": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1,
-                1,
-                0.78,
-                0.545
-            ]
-        },
-        "m762": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
                 1,
@@ -166,15 +175,6 @@
             ]
         },
         "aug": {
-            "recognition_confidence_threshold": 0.4,
-            "coefficient_list": [
-                1,
-                1,
-                0.78,
-                0.545
-            ]
-        },
-        "m416": {
             "recognition_confidence_threshold": 0.4,
             "coefficient_list": [
                 1,
