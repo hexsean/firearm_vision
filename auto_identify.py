@@ -13,7 +13,6 @@ import os
 import json
 
 from pynput import keyboard
-from pynput.keyboard import Key
 
 from template_manager import TemplateManager
 from tools.ov_gui.overlay_manager import OverlayManager
@@ -459,9 +458,8 @@ def on_press(key):
             print(f"> 打开背包的握把截图: {grip_filename}")
             print(f"> 打开背包的枪托截图: {butt_filename}")
             print(f"> 打开背包的瞄具截图: {sight_filename}")
-    except AttributeError:
-        if key == Key.f5:
-            trigger_config_reload()
+    except AttributeError as e:
+        print(e)
 
 
 # =========================================>> 线程初始化 <<============================================
