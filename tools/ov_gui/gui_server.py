@@ -107,5 +107,5 @@ def start_gui_server(queue):
     command_listener.command_received.connect(lambda cmd: listener_thread.quit() if cmd.get('action') == 'exit' else None)
     listener_thread.finished.connect(app.quit)
     listener_thread.start()
-    print("GUI Server Process Started...")
+    print("> GUI Server Process Started...")
     sys.exit(app.exec())

@@ -1,6 +1,7 @@
 import sys
 import datetime
 from typing import List
+import multiprocessing
 
 import dxcam
 import mss
@@ -12,6 +13,7 @@ import os
 import json
 
 from pynput import keyboard
+from pynput.keyboard import Key
 
 from template_manager import TemplateManager
 from tools.ov_gui.overlay_manager import OverlayManager
@@ -23,6 +25,13 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
 
+RELOAD_CONFIG_EVENT = threading.Event()
+
+
+def trigger_config_reload():
+    """重载配置"""
+    print("> 收到配置重载请求, 将在当前循环结束后刷新...")
+    RELOAD_CONFIG_EVENT.set()
 # =========================================>> 配置加载和优化 <<============================================
 
 def load_raw_configuration():
@@ -77,7 +86,7 @@ def calculate_optimal_capture_region(config_dict):
 
     # 创建 dxcam 需要的区域元组 (left, top, right, bottom)
     capture_region = (min_x, min_y, max_x, max_y)
-    print(f"> 优化启动：将从全屏 {config_dict['screen_resolution']} 优化为捕捉区域 {capture_region}")
+    print(f"> 当前监控区域：{config_dict['screen_resolution']} => {capture_region}")
 
     return capture_region
 
@@ -107,7 +116,6 @@ def convert_to_relative_coordinates(config_dict, offset_x, offset_y):
                 value[1] -= offset_y
 
     convert_coords(config_dict)
-    print("> 所有配置坐标已转换为相对坐标。")
 
 
 def load_optimized_configuration():
@@ -395,9 +403,9 @@ def coefficient_monitor(overlay_manager, fps, config):
 def on_press(key):
     try:
         char = key.char.lower()
-        config1 = load_original_configuration()
         if char == 'k':
             print("> 正在截取屏幕...")
+            config1 = load_original_configuration()
             dir_name = "screenshots"
             if not os.path.exists(dir_name):
                 os.makedirs(dir_name)
@@ -449,8 +457,9 @@ def on_press(key):
             print(f"> 打开背包的握把截图: {grip_filename}")
             print(f"> 打开背包的枪托截图: {butt_filename}")
             print(f"> 打开背包的瞄具截图: {sight_filename}")
-    except AttributeError as e:
-        print(e)
+    except AttributeError:
+        if key == Key.f5:
+            trigger_config_reload()
 
 
 # =========================================>> 线程初始化 <<============================================
@@ -680,6 +689,8 @@ def firearm_monitor(frame, template, overlay_manager, overlay_name, config):
 
 
 def tart_monitoring(overlay_manager, config):
+    print("> 所有监控运行中, 请勿关闭窗口...")
+    print("> ")
     # 重置枪械, 姿势, 和配件
     reset_all(config)
     # 加载模板
@@ -698,10 +709,20 @@ def tart_monitoring(overlay_manager, config):
     target_fps = config.target_fps
     frame_interval = 1.0 / target_fps
     # 初始化截图工具
-    camera = dxcam.create(output_color="BGR")
-    camera.start(region=config.optimized_capture_region, target_fps=target_fps)
+    try:
+        camera = dxcam.create(output_color="BGR")
+        camera.start(region=config.optimized_capture_region, target_fps=target_fps)
+    except Exception as e:
+        print(f"> DXCAM 截图模块初始化失败: {e}")
+        print("> 请确保您的系统支持 DirectX 11, 且没有其他程序独占屏幕.")
+        print("> 程序将在5秒后退出.")
+        time.sleep(5)
+        return
+
     # 开始
     while camera.is_capturing:
+        if RELOAD_CONFIG_EVENT.is_set():
+            break
         loop_start_time = time.perf_counter()
         # 获取最新帧
         frame = camera.get_latest_frame()
@@ -726,11 +747,12 @@ def tart_monitoring(overlay_manager, config):
         sleep_time = frame_interval - elapsed
         if sleep_time > 0:
             time.sleep(sleep_time)
+    camera.stop()
+    print("> 监控已停止.")
 
 
 def main():
     config = load_optimized_configuration()
-    print("> 验证程序中... ")
     verify_activation_code(config)
 
     if config.is_debug:
@@ -738,22 +760,29 @@ def main():
         manager.start()
         time.sleep(1)
         manager.client.move(pos=config.overlay_position)
-        print("> 调试模式已开启 ===> 仅用于调试,请勿在正式环境使用")
+        print("> 调试模式已开启")
         # 截图监听
         keyboard.Listener(on_press=on_press).start()
         print("> 截图监听已启动")
-        # 开始监控
-        print("> ")
         # 系数监听
-        threading.Thread(target=coefficient_monitor, args=(manager.client, config.target_fps, config)).start()
-        print("> 计算系数监控中...")
-        tart_monitoring(manager.client, config)
+        threading.Thread(target=coefficient_monitor, args=(manager.client, config.target_fps, config), daemon=True).start()
+        print("> 系数仪表监听已启动")
+        while not RELOAD_CONFIG_EVENT.is_set():
+            tart_monitoring(manager.client, config)
+            if RELOAD_CONFIG_EVENT.is_set():
+                config = load_optimized_configuration()
+                RELOAD_CONFIG_EVENT.clear()
+                print("> 配置已刷新, 正在重启监控...")
+            else:
+                if manager:
+                    manager.stop()
+                    print("> 程序已退出.")
+                break
     else:
         # 开始监控
-        print("> 当前程序运行中,请保持窗口开启 ")
-        print("> ")
         tart_monitoring(None, config)
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     main()
